@@ -2,4 +2,4 @@
 
 A template engine for docx file based on custom template syntax
 
-{{valuePlaceholder}}
+The text in docx file contains {{valuePlaceholder}} placeholder which will be replaced by corresponding values in data model.
