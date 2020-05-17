@@ -1,3 +1,4 @@
+using Docx.DataModel;
 using Xunit;
 
 namespace Docx.Tests
@@ -11,7 +12,7 @@ namespace Docx.Tests
         [Fact]
         public void HelloWorld()
         {
-            this.Process(nameof(HelloWorld));
+            this.Process(nameof(HelloWorld), EmptyModel.Instance);
         }
     }
 }

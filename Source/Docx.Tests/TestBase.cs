@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Docx.DataModel;
 
 namespace Docx.Tests
 {
@@ -18,10 +19,10 @@ namespace Docx.Tests
             _outputFolder = $"../../../../TestOutputs/{samplesSubFolder}";
         }
 
-        protected void Process(string docxSampleFileName)
-            => this.Process(docxSampleFileName, EngineConfig.Default);
+        protected void Process(string docxSampleFileName, IModel model)
+            => this.Process(docxSampleFileName, model, EngineConfig.Default);
 
-        protected void Process(string docxSampleFileName, EngineConfig config)
+        protected void Process(string docxSampleFileName, IModel model, EngineConfig config)
         {
             if (!Directory.Exists(_outputFolder))
             {
@@ -38,7 +39,7 @@ namespace Docx.Tests
             using var templateStream = File.Open(inputFileName, FileMode.Open, FileAccess.Read);
 
             var engine = new DocumentEngine(config);
-            var docx = engine.Run(templateStream);
+            var docx = engine.Run(templateStream, model);
 
             File.WriteAllBytes(outputFileName, docx);
         }
