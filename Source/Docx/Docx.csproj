@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>Sidea.TemplateEngine.Docx</PackageId>
+    <Version>0.1.1</Version>
+    <Authors>Sidea</Authors>
+    <Company>Sidea</Company>
+    <Product>TemplateEngine.Docx</Product>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" Version="2.10.1" />
+  </ItemGroup>
+
+</Project>
