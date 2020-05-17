@@ -9,4 +9,8 @@
     <Product>TemplateEngine.Docx</Product>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" Version="2.10.1" />
+  </ItemGroup>
+
 </Project>
