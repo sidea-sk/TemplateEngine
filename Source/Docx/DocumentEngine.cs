@@ -1,27 +1,40 @@
 ﻿using System.IO;
 using DocumentFormat.OpenXml.Packaging;
+using Docx.Processors;
 
 namespace Docx
 {
     public class DocumentEngine
     {
-        public MemoryStream RunAsStream(Stream docxStream)
-            => this.RunAsStream(docxStream, EngineConfig.Default);
+        private EngineConfig _engineConfig;
 
-        public MemoryStream RunAsStream(Stream docxStream, EngineConfig engineConfig)
+        public DocumentEngine() : this(EngineConfig.Default)
         {
-            using var docx = WordprocessingDocument.Open(docxStream, false);
+        }
 
-            return new MemoryStream();
+        public DocumentEngine(EngineConfig engineConfig)
+        {
+            _engineConfig = engineConfig;
+        }
+
+        public byte[] Run(Stream docxTemplate)
+            => this.Run(docxTemplate, _engineConfig);
+
+        public byte[] Run(Stream docxTemplate, EngineConfig engineConfig)
+        {
+            using var ms = new MemoryStream();
+            docxTemplate.CopyTo(ms);
+
+            using var docx = WordprocessingDocument.Open(ms, true);
+            DocumentProcessor.Process(docx);
+
+            return ms.ToArray();
         }
 
         public byte[] Run(byte[] docxTemplate)
-            => this.Run(docxTemplate, EngineConfig.Default);
+            => this.Run(docxTemplate);
 
         public byte[] Run(byte[] docxTemplate, EngineConfig engineConfig)
-        {
-            using var ms = this.RunAsStream(new MemoryStream(docxTemplate), engineConfig);
-            return ms.ToArray();
-        }
+            => this.Run(new MemoryStream(docxTemplate), engineConfig);
     }
 }
