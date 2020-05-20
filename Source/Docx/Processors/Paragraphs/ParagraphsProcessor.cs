@@ -32,10 +32,9 @@ namespace Docx.Processors.Paragraphs
                 switch (template)
                 {
                     case SingleValueTemplate svt:
-                        var endOfText = ProcessTemplate(svt, paragraphs, context);
+                        var endOfText = this.ProcessTemplate(svt, paragraphs, context);
 
-                        paragraphs = parent
-                            .Paragraphs()
+                        paragraphs = paragraphs
                             .Skip(svt.Token.ParagraphIndex)
                             .ToArray();
 

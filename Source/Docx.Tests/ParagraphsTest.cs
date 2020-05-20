@@ -28,6 +28,12 @@ namespace Docx.Tests
         }
 
         [Fact]
+        public void SimpleValueMultipleParagraphs()
+        {
+            this.Process(nameof(SimpleValueMultipleParagraphs), new SimpleModel("xyz", "The replacement value!"));
+        }
+
+        [Fact]
         public void SimpleValueStyling()
         {
             this.Process(nameof(SimpleValueStyling), new SimpleModel("xyz", "The real value of XYZ"));
