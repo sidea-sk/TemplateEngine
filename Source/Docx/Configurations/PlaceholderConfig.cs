@@ -12,13 +12,18 @@
         {
             this.Start = start;
             this.End = end;
-            this.Delimiter = delimiter;
-            this.FormatDelimiter = formatDelimiter;
+            this.NamesDelimiter = delimiter;
+            this.ParametersDelimiter = formatDelimiter;
         }
 
         public string Start { get; }
         public string End { get; }
-        public string Delimiter { get; }
-        public string FormatDelimiter { get; }
+        public string NamesDelimiter { get; }
+        public string ParametersDelimiter { get; }
+
+        public string ToRegexPattern()
+        {
+            return Start + "." + End;
+        }
     }
 }

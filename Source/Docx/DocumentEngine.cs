@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using DocumentFormat.OpenXml.Packaging;
+using Docx.DataModel;
 using Docx.Processors;
 
 namespace Docx
@@ -17,24 +18,29 @@ namespace Docx
             _engineConfig = engineConfig;
         }
 
-        public byte[] Run(Stream docxTemplate)
-            => this.Run(docxTemplate, _engineConfig);
+        public byte[] Run(Stream docxTemplate, Model model)
+            => this.Run(docxTemplate, model, _engineConfig);
 
-        public byte[] Run(Stream docxTemplate, EngineConfig engineConfig)
+        public byte[] Run(Stream docxTemplate, Model model, EngineConfig engineConfig)
         {
-            using var ms = new MemoryStream();
-            docxTemplate.CopyTo(ms);
+            var processor = new DocumentProcessor(engineConfig);
+            using (var ms = new MemoryStream())
+            {
+                docxTemplate.CopyTo(ms);
 
-            using var docx = WordprocessingDocument.Open(ms, true);
-            DocumentProcessor.Process(docx);
+                using (var docx = WordprocessingDocument.Open(ms, true))
+                {
+                    processor.Process(docx, model);
+                }
 
-            return ms.ToArray();
+                return ms.ToArray();
+            }
         }
 
-        public byte[] Run(byte[] docxTemplate)
-            => this.Run(docxTemplate);
+        public byte[] Run(byte[] docxTemplate, Model model)
+            => this.Run(docxTemplate, model);
 
-        public byte[] Run(byte[] docxTemplate, EngineConfig engineConfig)
-            => this.Run(new MemoryStream(docxTemplate), engineConfig);
+        public byte[] Run(byte[] docxTemplate, Model model, EngineConfig engineConfig)
+            => this.Run(new MemoryStream(docxTemplate), model, engineConfig);
     }
 }
