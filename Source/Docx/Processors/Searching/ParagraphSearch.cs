@@ -16,17 +16,18 @@ namespace Docx.Processors.Searching
 
             for (var i = 0; i < paragraphs.Count; i++)
             {
-                var text = i == 0
-                    ? paragraphs.ElementAt(i).InnerText.Substring(firstParagraphStartTextIndex)
-                    : paragraphs.ElementAt(i).InnerText;
+                var textIndexOffset = i == 0
+                    ? firstParagraphStartTextIndex
+                    : 0;
 
+                var text = paragraphs.ElementAt(i).InnerText.Substring(textIndexOffset);
                 var match = Regex.Match(text, pattern, RegexOptions.IgnoreCase);
                 if (!match.Success)
                 {
                     continue;
                 }
 
-                var token = config.CreateOpeningToken(match.Groups[1], i);
+                var token = config.CreateOpeningToken(match.Groups[1], i, textIndexOffset);
                 switch (token.TokenType)
                 {
                     case TokenType.SingleValue:

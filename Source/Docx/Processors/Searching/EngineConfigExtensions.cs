@@ -8,23 +8,27 @@ namespace Docx.Processors.Searching
     {
         private const string anyText = ".*?";
 
-        public static Token CreateOpeningToken(this EngineConfig engineConfig, Group match, int paragraphIndex)
+        public static Token CreateOpeningToken(
+            this EngineConfig engineConfig,
+            Group match,
+            int paragraphIndex,
+            int textIndexOffset)
         {
             ModelDescription modelDescription;
             if (engineConfig.IsArrayToken(match.Value))
             {
                 modelDescription = match.Value.ToCollectionModelDescription(engineConfig);
-                return Token.CollectionBegin(modelDescription, match.Index, paragraphIndex);
+                return Token.CollectionBegin(modelDescription, match.Index + textIndexOffset, paragraphIndex);
             }
 
             if (engineConfig.IsConditionToken(match.Value))
             {
                 modelDescription = match.Value.ToConditionModelDescription(engineConfig);
-                return Token.ConditionBegin(modelDescription, match.Index, paragraphIndex);
+                return Token.ConditionBegin(modelDescription, match.Index + textIndexOffset, paragraphIndex);
             }
 
             modelDescription = match.Value.ToSingleValueModelDescription(engineConfig);
-            return Token.SingleValue(modelDescription, match.Index, paragraphIndex);
+            return Token.SingleValue(modelDescription, match.Index + textIndexOffset, paragraphIndex);
         }
 
         public static Token CreateClosingToken(this EngineConfig engineConfig, Group match, int paragraphIndex)

@@ -22,9 +22,21 @@ namespace Docx.Tests
         }
 
         [Fact]
+        public void RepeatedSimpleValue()
+        {
+            this.Process(nameof(RepeatedSimpleValue), new SimpleModel("xyz", "XYZ for repetition"));
+        }
+
+        [Fact]
         public void SimpleValueStyling()
         {
             this.Process(nameof(SimpleValueStyling), new SimpleModel("xyz", "The real value of XYZ"));
+        }
+
+        [Fact]
+        public void SimpleValueInconsistentStyling()
+        {
+            this.Process(nameof(SimpleValueInconsistentStyling), new SimpleModel("xyz", "The real value of XYZ"));
         }
 
         [Fact]
