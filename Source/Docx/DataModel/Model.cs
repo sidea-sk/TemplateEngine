@@ -1,6 +1,6 @@
 ﻿namespace Docx.DataModel
 {
-    public abstract class Model : IModel, IParentedModel
+    public abstract class Model : IModel
     {
         public static readonly Model Empty = new EmptyModel();
         public static readonly Model Exception = new ExceptionModel();
@@ -10,14 +10,17 @@
             this.Name = name;
         }
 
+        protected Model Parent { get; private set; }
+
         public string Name { get; }
 
         public abstract string FormattedValue();
 
-        internal abstract Model Find(ModelDescription description);
+        internal abstract Model Find(ModelExpression expression);
 
-        void IParentedModel.SetParent(IModel context)
+        internal void SetParent(Model context)
         {
+            this.Parent = context;
         }
 
         private class EmptyModel : Model
@@ -31,7 +34,7 @@
                 return string.Empty;
             }
 
-            internal override Model Find(ModelDescription description)
+            internal override Model Find(ModelExpression expression)
             {
                 return this;
             }
@@ -48,7 +51,7 @@
                 throw new System.Exception("Exception model");
             }
 
-            internal override Model Find(ModelDescription description)
+            internal override Model Find(ModelExpression expression)
             {
                 throw new System.Exception("Exception model");
             }

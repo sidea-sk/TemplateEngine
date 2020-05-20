@@ -7,6 +7,10 @@ namespace Docx.DataModel
     {
         private readonly Dictionary<string, Model> _childModels = new Dictionary<string, Model>();
 
+        public ObjectModel(string name, params Model[] childModels) : this(name, (IEnumerable<Model>)childModels)
+        {
+        }
+
         public ObjectModel(string name, IEnumerable<Model> childModels) : base(name)
         {
             foreach(var child in childModels)
@@ -24,14 +28,27 @@ namespace Docx.DataModel
             _childModels.Add(child.Name, child);
         }
 
-        internal override Model Find(ModelDescription description)
+        internal override Model Find(ModelExpression expression)
         {
-            return null;
+            if(expression.Root == this.Name)
+            {
+                var childExpression = expression.Child();
+                if (!_childModels.ContainsKey(childExpression.Root))
+                {
+                    return Model.Empty;
+                }
+
+                return _childModels[childExpression.Root].Find(childExpression);
+            }
+
+            return this.Parent == null
+                ? Model.Empty
+                : this.Parent.Find(expression);
         }
 
         protected void SetSelfAsParent(params Model[] childModels)
         {
-            foreach(var child in childModels.Cast<IParentedModel>())
+            foreach(var child in childModels)
             {
                 child.SetParent(this);
             }
