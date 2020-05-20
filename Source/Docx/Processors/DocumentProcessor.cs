@@ -5,19 +5,26 @@ namespace Docx.Processors
 {
     internal class DocumentProcessor
     {
-        public static void Process(WordprocessingDocument document, IModel documentModel)
+        private CompositeElementProcessor _compositeElementProcessor;
+
+        public DocumentProcessor(EngineConfig engineConfig)
+        {
+            _compositeElementProcessor = new CompositeElementProcessor(engineConfig);
+        }
+
+        public void Process(WordprocessingDocument document, Model documentModel)
         {
             var mainPart = document.MainDocumentPart;
-            CompositeElementProcessor.Process(mainPart.Document.Body, documentModel);
+            _compositeElementProcessor.Process(mainPart.Document.Body, documentModel);
 
             foreach (var hp in mainPart.HeaderParts)
             {
-                CompositeElementProcessor.Process(hp.Header, documentModel);
+                _compositeElementProcessor.Process(hp.Header, documentModel);
             }
 
             foreach (var fp in mainPart.FooterParts)
             {
-                CompositeElementProcessor.Process(fp.Footer, documentModel);
+                _compositeElementProcessor.Process(fp.Footer, documentModel);
             }
         }
     }

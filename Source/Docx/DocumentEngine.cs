@@ -18,24 +18,29 @@ namespace Docx
             _engineConfig = engineConfig;
         }
 
-        public byte[] Run(Stream docxTemplate, IModel model)
+        public byte[] Run(Stream docxTemplate, Model model)
             => this.Run(docxTemplate, model, _engineConfig);
 
-        public byte[] Run(Stream docxTemplate, IModel model, EngineConfig engineConfig)
+        public byte[] Run(Stream docxTemplate, Model model, EngineConfig engineConfig)
         {
-            using var ms = new MemoryStream();
-            docxTemplate.CopyTo(ms);
+            var processor = new DocumentProcessor(engineConfig);
+            using (var ms = new MemoryStream())
+            {
+                docxTemplate.CopyTo(ms);
 
-            using var docx = WordprocessingDocument.Open(ms, true);
-            DocumentProcessor.Process(docx, model);
+                using (var docx = WordprocessingDocument.Open(ms, true))
+                {
+                    processor.Process(docx, model);
+                }
 
-            return ms.ToArray();
+                return ms.ToArray();
+            }
         }
 
-        public byte[] Run(byte[] docxTemplate, IModel model)
+        public byte[] Run(byte[] docxTemplate, Model model)
             => this.Run(docxTemplate, model);
 
-        public byte[] Run(byte[] docxTemplate, IModel model, EngineConfig engineConfig)
+        public byte[] Run(byte[] docxTemplate, Model model, EngineConfig engineConfig)
             => this.Run(new MemoryStream(docxTemplate), model, engineConfig);
     }
 }

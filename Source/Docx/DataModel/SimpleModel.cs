@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Docx.DataModel
 {
+    [DebuggerDisplay("{Name}: {FormattedValue()}")]
     public sealed class SimpleModel : Model
     {
         private readonly Func<string> _formattedValueFunc;
@@ -18,6 +20,16 @@ namespace Docx.DataModel
         public override string FormattedValue()
         {
             return _formattedValueFunc();
+        }
+
+        internal override Model Find(ModelDescription description)
+        {
+            if(description.Name == this.Name)
+            {
+                return this;
+            }
+
+            return Model.Empty;
         }
     }
 }

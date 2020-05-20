@@ -12,7 +12,7 @@ namespace Docx.Tests
         [Fact]
         public void HelloWorld()
         {
-            this.Process(nameof(HelloWorld), EmptyModel.Instance);
+            this.Process(nameof(HelloWorld), Model.Empty);
         }
     }
 }

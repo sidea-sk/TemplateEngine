@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Text;
 using Docx.DataModel;
 
@@ -19,10 +17,10 @@ namespace Docx.Tests
             _outputFolder = $"../../../../TestOutputs/{samplesSubFolder}";
         }
 
-        protected void Process(string docxSampleFileName, IModel model)
+        protected void Process(string docxSampleFileName, Model model)
             => this.Process(docxSampleFileName, model, EngineConfig.Default);
 
-        protected void Process(string docxSampleFileName, IModel model, EngineConfig config)
+        protected void Process(string docxSampleFileName, Model model, EngineConfig config)
         {
             if (!Directory.Exists(_outputFolder))
             {

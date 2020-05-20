@@ -24,6 +24,11 @@ namespace Docx.DataModel
             _childModels.Add(child.Name, child);
         }
 
+        internal override Model Find(ModelDescription description)
+        {
+            return null;
+        }
+
         protected void SetSelfAsParent(params Model[] childModels)
         {
             foreach(var child in childModels.Cast<IParentedModel>())

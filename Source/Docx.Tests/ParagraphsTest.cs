@@ -10,9 +10,27 @@ namespace Docx.Tests
         }
 
         [Fact]
+        public void SimpleValueAsTheOnlyText()
+        {
+            this.Process(nameof(SimpleValueAsTheOnlyText), new SimpleModel("xyz", "The real value of XYZ"));
+        }
+
+        [Fact]
         public void SimpleValue()
         {
-            this.Process(nameof(SimpleValue), new SimpleModel("xyz", "Replaced value of XYZ"));
+            this.Process(nameof(SimpleValue), new SimpleModel("xyz", "The real value of XYZ"));
+        }
+
+        [Fact]
+        public void DuplicatedCharsSimpleValues()
+        {
+            this.Process(nameof(DuplicatedCharsSimpleValues), new SimpleModel("xyz", "The real value of XYZ"));
+        }
+
+        [Fact]
+        public void MultipleSimpleValues()
+        {
+            this.Process(nameof(MultipleSimpleValues), new SimpleModel("xyz", "The real value of XYZ"));
         }
     }
 }
