@@ -15,69 +15,80 @@ namespace Docx.Processors.Paragraphs
         {
             var runs = paragraph.Runs().ToArray();
 
-            var (startRunIndex, endRunIndex) = runs.FindIndeces(token.TextIndex, token.TextIndex + token.ModelDescription.OriginalText.Length);
+            var (startRunIndex, endRunIndex) = runs.FindIndeces(token.TextIndex, token.ModelDescription.OriginalText.Length);
 
             var affectedRuns = runs
                 .Skip(startRunIndex)
                 .Take(endRunIndex - startRunIndex + 1)
                 .ToArray();
 
-            var startRun = runs.First();
-            var endRun = runs.Last();
+            var startRun = affectedRuns.First();
+            var endRun = affectedRuns.Last();
 
-            var previousRunsLastTextIndex = runs
-                .Take(startRunIndex - 1)
-                .LastTextIndex();
+            var previousRunsTextLength = runs
+                .Take(startRunIndex)
+                .TextLength();
 
-            var startFromIndex = token.TextIndex - previousRunsLastTextIndex;
-            var startToIndex = token.TextIndex + token.ModelDescription.OriginalText.Length - previousRunsLastTextIndex;
+            var startFromIndex = token.TextIndex - previousRunsTextLength;
+            var startToIndex = token.TextIndex + token.ModelDescription.OriginalText.Length - previousRunsTextLength;
 
             var replacement = model.FormattedValue();
+            var toRemoveRunCount = affectedRuns.Length - 2;
+            if (startRun != endRun)
+            {
+                var replacedTextEndIndex = token.TextIndex + token.ModelDescription.OriginalText.Length - 1
+                    - previousRunsTextLength
+                    - affectedRuns.Take(affectedRuns.Length - 1).TextLength();
+
+                endRun.ReplaceText(0, replacedTextEndIndex, string.Empty);
+                if (string.IsNullOrWhiteSpace(endRun.InnerText))
+                {
+                    toRemoveRunCount += 1;
+                }
+            }
+
             startRun.ReplaceText(startFromIndex, startToIndex, replacement);
 
-            runs.Skip(startRunIndex)
-                .Take(endRunIndex - startRunIndex - 1)
-                .LastTextIndex();
-
-            if (startRunIndex != endRunIndex)
-            {
-                // remove text from last run
-            }
+            affectedRuns
+                .Skip(1)
+                .Take(toRemoveRunCount)
+                .RemoveSelfFromParent();
 
             return token.TextIndex + replacement.Length;
         }
 
-        private static (int startRun, int endRun) FindIndeces(this IEnumerable<Run> runs, int tokenStartTextIndex, int tokenEndIndex)
+        private static (int startRun, int endRun) FindIndeces(this IEnumerable<Run> runs, int tokenStartTextIndex, int tokenLength)
         {
             var startIndex = -1;
             var endIndex = -1;
 
-            var textIndex = 0;
+            var lastTextIndex = -1;
             var index = 0;
             foreach(var run in runs)
             {
-                if(textIndex + run.InnerText.Length >= tokenStartTextIndex)
+                lastTextIndex += run.InnerText.Length;
+                if (startIndex == -1 && lastTextIndex >= tokenStartTextIndex)
                 {
                     startIndex = index;
                 }
 
-                if(textIndex + run.InnerText.Length >= tokenEndIndex)
+                if (endIndex == -1 && lastTextIndex >= tokenStartTextIndex + tokenLength - 1)
                 {
                     endIndex = index;
                 }
 
-                textIndex += run.InnerText.Length;
-
-                if(startIndex > -1 && endIndex > -1)
+                if (startIndex > -1 && endIndex > -1)
                 {
                     return (startIndex, endIndex);
                 }
+
+                index++;
             }
 
             throw new System.Exception("Seek run index out of range");
         }
 
-        private static int LastTextIndex(this IEnumerable<Run> runs)
+        private static int TextLength(this IEnumerable<Run> runs)
         {
             var lastTextIndex = runs.Sum(r => r.InnerText.Length);
             return lastTextIndex;
@@ -96,7 +107,7 @@ namespace Docx.Processors.Paragraphs
                 }
 
                 var prefixText = t.Text.Substring(0, fromIndex - previousTextLastIndex);
-                var tailText = toIndex < t.Text.Length
+                var tailText = toIndex < t.Text.Length - 1
                     ? t.Text.Substring(toIndex - previousTextLastIndex)
                     : string.Empty;
 
