@@ -22,9 +22,9 @@ namespace Docx.DataModel
             return _formattedValueFunc();
         }
 
-        internal override Model Find(ModelDescription description)
+        internal override Model Find(ModelExpression expression)
         {
-            if(description.Name == this.Name)
+            if(expression.IsFinal && expression.Name == this.Name)
             {
                 return this;
             }

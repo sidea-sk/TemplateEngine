@@ -56,5 +56,51 @@ namespace Docx.Tests
         {
             this.Process(nameof(MultipleSimpleValues), new SimpleModel("xyz", "The real value of XYZ"));
         }
+
+        [Fact]
+        public void ObjectModel()
+        {
+            var @object = new ObjectModel(
+                "object",
+                new SimpleModel("a", "A - value"),
+                new SimpleModel("b", "B - value"),
+                new SimpleModel("c", "C - value")
+                );
+
+            this.Process(nameof(ObjectModel), @object);
+        }
+
+        [Fact]
+        public void ObjectModelMultipleValues()
+        {
+            var @object = new ObjectModel(
+                "object",
+                new SimpleModel("a", "A - value"),
+                new SimpleModel("b", "B - value"),
+                new SimpleModel("c", "C - value")
+                );
+
+            this.Process(nameof(ObjectModelMultipleValues), @object);
+        }
+
+        [Fact]
+        public void NestedObjectModel()
+        {
+            var level3 = new ObjectModel("level3", new SimpleModel("vl3", "value in level3"));
+            var level2 = new ObjectModel("level2", level3);
+            var level1 = new ObjectModel("level1", level2);
+
+            this.Process(nameof(NestedObjectModel), level1);
+        }
+
+        [Fact]
+        public void NestedObjectModelMultipleParagraphs()
+        {
+            var level3 = new ObjectModel("level3", new SimpleModel("vl3", "value in level3"));
+            var level2 = new ObjectModel("level2", level3, new SimpleModel("vl2", "value in level2"));
+            var level1 = new ObjectModel("level1", level2, new SimpleModel("vl1", "value in level1"));
+
+            this.Process(nameof(NestedObjectModelMultipleParagraphs), level1);
+        }
     }
 }

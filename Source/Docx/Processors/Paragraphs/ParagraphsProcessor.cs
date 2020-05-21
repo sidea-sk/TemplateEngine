@@ -47,7 +47,7 @@ namespace Docx.Processors.Paragraphs
         private int ProcessTemplate(SingleValueTemplate template, IReadOnlyCollection<Paragraph> paragraphs, Model context)
         {
             var p = paragraphs.ElementAt(template.Token.ParagraphIndex);
-            var model = context.Find(template.Token.ModelDescription);
+            var model = context.Find(template.Token.ModelDescription.Expression);
 
             var textEndIndex = p.ReplaceToken(template.Token, model);
             return textEndIndex;
