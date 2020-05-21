@@ -15,6 +15,6 @@ namespace Docx.DataModel
             this.SetSelfAsParent(ai);
         }
 
-        public IReadOnlyCollection<IModel> Items { get; }
+        public IReadOnlyCollection<Model> Items { get; }
     }
 }
