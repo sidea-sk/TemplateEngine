@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Docx.DataModel;
@@ -29,29 +30,24 @@ namespace Docx.Processors.Paragraphs
                 .Take(startRunIndex)
                 .TextLength();
 
-            var startFromIndex = token.TextIndex - previousRunsTextLength;
-            var startToIndex = token.TextIndex + token.ModelDescription.OriginalText.Length - previousRunsTextLength;
-
-            var replacement = model.FormattedValue();
-            var toRemoveRunCount = affectedRuns.Length - 2;
             if (startRun != endRun)
             {
-                var replacedTextEndIndex = token.TextIndex + token.ModelDescription.OriginalText.Length - 1
+                var replaceLength = token.ModelDescription.OriginalText.Length
                     - previousRunsTextLength
-                    - affectedRuns.Take(affectedRuns.Length - 1).TextLength();
+                    - affectedRuns.Take(affectedRuns.Length - 1).TextLength()
+                    + token.TextIndex
+                    ;
 
-                endRun.ReplaceText(0, replacedTextEndIndex, string.Empty);
-                if (string.IsNullOrWhiteSpace(endRun.InnerText))
-                {
-                    toRemoveRunCount += 1;
-                }
+                endRun.ReplaceText(0, replaceLength, string.Empty);
             }
 
-            startRun.ReplaceText(startFromIndex, startToIndex, replacement);
+            var replacement = model.FormattedValue();
+            var replaceFromIndex = token.TextIndex - previousRunsTextLength;
+            startRun.ReplaceText(replaceFromIndex, token.ModelDescription.OriginalText.Length, replacement);
 
             affectedRuns
                 .Skip(1)
-                .Take(toRemoveRunCount)
+                .Take(affectedRuns.Length - 2)
                 .RemoveSelfFromParent();
 
             return token.TextIndex + replacement.Length;
@@ -94,22 +90,26 @@ namespace Docx.Processors.Paragraphs
             return lastTextIndex;
         }
 
-        private static void ReplaceText(this Run run, int fromIndex, int toIndex, string replacement)
+        private static void ReplaceText(this Run run, int fromIndex, int length, string replacement)
         {
-            var previousTextLastIndex = 0;
+            if (length <= 0)
+            {
+                return;
+            }
 
+            var aggregatedTextLength = 0;
             foreach(var t in run.Childs<Text>().ToArray())
             {
-                if(previousTextLastIndex + t.Text.Length < fromIndex)
+                if (aggregatedTextLength + t.Text.Length - 1 < fromIndex)
                 {
-                    previousTextLastIndex += t.Text.Length;
+                    aggregatedTextLength += t.Text.Length;
                     continue;
                 }
 
-                var prefixText = t.Text.Substring(0, fromIndex - previousTextLastIndex);
-                var tailText = toIndex < t.Text.Length - 1
-                    ? t.Text.Substring(toIndex - previousTextLastIndex)
-                    : string.Empty;
+                var prefixText = t.Text.Substring(0, fromIndex - aggregatedTextLength);
+                var tailText = fromIndex + length < t.Text.Length
+                        ? t.Text.Substring(fromIndex + length - aggregatedTextLength)
+                        : string.Empty;
 
                 t.Text = prefixText + replacement + tailText;
                 break;
