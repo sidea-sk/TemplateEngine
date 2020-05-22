@@ -117,5 +117,19 @@ namespace Docx.Tests
 
             this.Process(nameof(CollectionModel), model);
         }
+
+        [Fact]
+        public void CollectionModelParagraphs()
+        {
+            var items = Enumerable.Range(0, 5)
+                .Select(i => new SimpleModel("$i", () => i.ToString()));
+
+            var model = new CollectionModel(
+                "root",
+                items,
+                new Model[0]);
+
+            this.Process(nameof(CollectionModelParagraphs), model);
+        }
     }
 }
