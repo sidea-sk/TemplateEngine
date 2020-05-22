@@ -57,17 +57,38 @@ namespace Docx.Processors.Searching
             Token openToken,
             EngineConfig config)
         {
-            var pattern = config.ClosingTokenRegexPattern(openToken);
+            var openPattern = config.OpeningTokenRegexPattern(openToken);
+            var closePattern = config.ClosingTokenRegexPattern(openToken);
+
+            var openCounter = 1;
             for (var i = 0; i < paragraphs.Count; i++)
             {
-                var text = paragraphs.ElementAt(i).InnerText;
-                var match = Regex.Match(text, pattern, RegexOptions.IgnoreCase);
-                if (!match.Success)
+                if(i < openToken.ParagraphIndex)
                 {
                     continue;
                 }
 
-                return config.CreateClosingToken(match.Groups[1], i);
+                var text = i == openToken.ParagraphIndex
+                    ? paragraphs.ElementAt(i).InnerText.Substring(openToken.TextIndex + openToken.ModelDescription.OriginalText.Length)
+                    : paragraphs.ElementAt(i).InnerText;
+
+                var openMatch = Regex.Match(text, openPattern, RegexOptions.IgnoreCase);
+                var closeMatch = Regex.Match(text, closePattern, RegexOptions.IgnoreCase);
+
+                if (openMatch.Success && (!closeMatch.Success || closeMatch.Index > openMatch.Index))
+                {
+                    openCounter++;
+                }
+
+                if (closeMatch.Success)
+                {
+                    openCounter--;
+
+                    if (openCounter == 0)
+                    {
+                        return config.CreateClosingToken(closeMatch.Groups[1], i);
+                    }
+                }
             }
 
             return Token.None;
