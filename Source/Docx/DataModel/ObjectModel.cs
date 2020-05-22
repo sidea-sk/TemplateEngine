@@ -32,6 +32,11 @@ namespace Docx.DataModel
         {
             if(expression.Root == this.Name)
             {
+                if (expression.IsFinal)
+                {
+                    return this;
+                }
+
                 var childExpression = expression.Child();
                 if (!_childModels.ContainsKey(childExpression.Root))
                 {

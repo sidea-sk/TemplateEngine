@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Docx.DataModel;
 using Docx.Processors.Searching;
 
-namespace Docx.Processors.Paragraphs
+namespace Docx.Processors
 {
     internal static class ParagraphTools
     {

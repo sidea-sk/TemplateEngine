@@ -1,6 +1,6 @@
 ﻿namespace Docx
 {
-    public class ConditionConfig
+    public sealed class ConditionConfig : ITemplateConfig
     {
         public static readonly ConditionConfig Default = new ConditionConfig("?", "?");
 
@@ -19,5 +19,9 @@
         /// Engine will search for pattern (Placeholder.Start|EndCondition|variableName|Placeholder.End)
         /// </summary>
         public string End { get; }
+
+        string ITemplateConfig.OpenSuffix => this.Begin;
+
+        string ITemplateConfig.ClosePrefix => this.End;
     }
 }

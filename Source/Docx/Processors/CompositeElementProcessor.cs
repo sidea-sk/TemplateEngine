@@ -1,6 +1,6 @@
-﻿using DocumentFormat.OpenXml;
+﻿using System.Collections.Generic;
+using DocumentFormat.OpenXml;
 using Docx.DataModel;
-using Docx.Processors.Paragraphs;
 
 namespace Docx.Processors
 {
@@ -16,8 +16,7 @@ namespace Docx.Processors
         public void Process(OpenXmlCompositeElement compositeElement, Model context)
         {
             _paragraphsProcessor.Process(compositeElement, context);
-            // process paragraphs
-            // process tables
+            // _tableProcess.Process(compositeElement, context);
         }
     }
 }

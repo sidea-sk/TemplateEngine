@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Docx.DataModel;
 
 namespace Docx.Processors.Searching
@@ -15,15 +14,15 @@ namespace Docx.Processors.Searching
             int textIndexOffset)
         {
             ModelDescription modelDescription;
-            if (engineConfig.IsArrayToken(match.Value))
+            if (engineConfig.IsArrayOpenToken(match.Value))
             {
-                modelDescription = match.Value.ToCollectionModelDescription(engineConfig);
+                modelDescription = match.Value.ToOpenCollectionModelDescription(engineConfig);
                 return Token.CollectionBegin(modelDescription, match.Index + textIndexOffset, paragraphIndex);
             }
 
             if (engineConfig.IsConditionToken(match.Value))
             {
-                modelDescription = match.Value.ToConditionModelDescription(engineConfig);
+                modelDescription = match.Value.ToOpenConditionModelDescription(engineConfig);
                 return Token.ConditionBegin(modelDescription, match.Index + textIndexOffset, paragraphIndex);
             }
 
@@ -31,17 +30,20 @@ namespace Docx.Processors.Searching
             return Token.SingleValue(modelDescription, match.Index + textIndexOffset, paragraphIndex);
         }
 
-        public static Token CreateClosingToken(this EngineConfig engineConfig, Group match, int paragraphIndex)
+        public static Token CreateClosingToken(
+            this EngineConfig engineConfig,
+            Group match,
+            int paragraphIndex)
         {
-            if (engineConfig.IsArrayToken(match.Value))
+            if (engineConfig.IsArrayCloseToken(match.Value))
             {
-                var description = match.Value.ToCollectionModelDescription(engineConfig);
+                var description = match.Value.ToCloseCollectionModelDescription(engineConfig);
                 return Token.CollectionEnd(description, match.Index, paragraphIndex);
             }
 
             if (engineConfig.IsConditionToken(match.Value))
             {
-                var description = match.Value.ToConditionModelDescription(engineConfig);
+                var description = match.Value.ToCloseConditionModelDescription(engineConfig);
                 return Token.ConditionEnd(description, match.Index, paragraphIndex);
             }
 
@@ -52,44 +54,56 @@ namespace Docx.Processors.Searching
         {
             return $"^{anyText}"
                 + engineConfig.SimpleValueRegexPattern().ToRegexGroup()
-                //+ "|"
-                //+ engineConfig.ArrayOpenRegexPattern()
-                //+ "|"
-                //+ engineConfig.ConditionOpenRegexPattern()
                 + $"{anyText}$";
         }
 
-        public static bool IsTemplateToken(this EngineConfig engineConfig, string token)
+        public static string OpeningTokenRegexPattern(this EngineConfig engineConfig, Token openingToken)
         {
-            return Regex.IsMatch(token, engineConfig.ArrayOpenRegexPattern())
-                || Regex.IsMatch(token, engineConfig.ConditionOpenRegexPattern());
+            var expression = openingToken.ModelDescription.Expression
+                .ToExpressionString(engineConfig.Placeholder.NamesDelimiter)
+                .Escape();
+
+            switch (openingToken.TokenType)
+            {
+                case TokenType.CollectionBegin:
+                    return engineConfig.ArrayOpenRegexPattern(expression);
+                case TokenType.ConditionBegin:
+                    return engineConfig.ConditionCloseRegexPattern(expression);
+                default:
+                    throw new System.Exception("not supported");
+            }
         }
 
-        public static bool IsArrayToken(this EngineConfig engineConfig, string match)
+        public static string ClosingTokenRegexPattern(this EngineConfig engineConfig, Token openingToken)
         {
-            return Regex.IsMatch(match, engineConfig.ArrayOpenRegexPattern());
+            var expression = openingToken.ModelDescription.Expression
+                .ToExpressionString(engineConfig.Placeholder.NamesDelimiter)
+                .Escape();
+
+            switch (openingToken.TokenType)
+            {
+                case TokenType.CollectionBegin:
+                    return engineConfig.ArrayCloseRegexPattern(expression);
+                case TokenType.ConditionBegin:
+                    return engineConfig.ConditionCloseRegexPattern(expression);
+                default:
+                    throw new System.Exception("not supported");
+            }
         }
 
-        public static bool IsConditionToken(this EngineConfig engineConfig, string token)
+        private static bool IsArrayOpenToken(this EngineConfig engineConfig, string match)
+        {
+            return Regex.IsMatch(match, engineConfig.ArrayOpenRegexPattern(anyText));
+        }
+
+        private static bool IsArrayCloseToken(this EngineConfig engineConfig, string match)
+        {
+            return Regex.IsMatch(match, engineConfig.ArrayCloseRegexPattern(anyText));
+        }
+
+        private static bool IsConditionToken(this EngineConfig engineConfig, string token)
         {
             return Regex.IsMatch(token, engineConfig.ConditionOpenRegexPattern());
-        }
-
-        public static (string name, string parameters) SplitToken(this EngineConfig engineConfig, string token)
-        {
-            if (engineConfig.IsArrayToken(token))
-            {
-                return (token.Cut(engineConfig.Array.Open.Length, engineConfig.Array.Close.Length), string.Empty);
-            }
-
-            if (engineConfig.IsConditionToken(token))
-            {
-                return (token.Cut(engineConfig.Condition.Begin.Length, engineConfig.Condition.End.Length), string.Empty);
-            }
-
-            return token
-                .Cut(engineConfig.Placeholder.Start.Length, engineConfig.Placeholder.End.Length)
-                .SplitBy(engineConfig.Placeholder.ParametersDelimiter);
         }
 
         private static string SimpleValueRegexPattern(this EngineConfig engineConfig)
@@ -97,15 +111,15 @@ namespace Docx.Processors.Searching
             return $"{engineConfig.Placeholder.Start.Escape()}{anyText}{engineConfig.Placeholder.End.Escape()}";
         }
 
-        private static string ArrayOpenRegexPattern(this EngineConfig engineConfig)
+        private static string ArrayOpenRegexPattern(this EngineConfig engineConfig, string tokenRegex)
         {
-            return $"{engineConfig.Placeholder.Start.Escape()}{anyText}{engineConfig.Array.Open.Escape()}{engineConfig.Placeholder.End.Escape()}"
+            return $"{engineConfig.Placeholder.Start.Escape()}{tokenRegex}{engineConfig.Array.Open.Escape()}{engineConfig.Placeholder.End.Escape()}"
                 .ToRegexGroup();
         }
 
-        private static string ArrayCloseRegexPattern(this EngineConfig engineConfig)
+        private static string ArrayCloseRegexPattern(this EngineConfig engineConfig, string tokenRegex)
         {
-            return $"{engineConfig.Placeholder.Start.Escape()}{engineConfig.Array.Close.Escape()}{anyText}{engineConfig.Placeholder.End.Escape()}"
+            return $"{engineConfig.Placeholder.Start.Escape()}{engineConfig.Array.Close.Escape()}{tokenRegex}{engineConfig.Placeholder.End.Escape()}"
                 .ToRegexGroup();
         }
 
@@ -115,9 +129,9 @@ namespace Docx.Processors.Searching
                 .ToRegexGroup();
         }
 
-        private static string ConditionCloseRegexPattern(this EngineConfig engineConfig)
+        private static string ConditionCloseRegexPattern(this EngineConfig engineConfig, string tokenRegex)
         {
-            return $"{engineConfig.Placeholder.Start.Escape()}{engineConfig.Condition.End.Escape()}.{engineConfig.Placeholder.End.Escape()}"
+            return $"{engineConfig.Placeholder.Start.Escape()}{engineConfig.Condition.End.Escape()}{tokenRegex}.{engineConfig.Placeholder.End.Escape()}"
                 .ToRegexGroup();
         }
 
@@ -147,34 +161,59 @@ namespace Docx.Processors.Searching
             return (value.Substring(0, i), value.Substring(i + 1));
         }
 
-        private static ModelDescription ToCollectionModelDescription(this string token, EngineConfig engineConfig)
+        private static ModelDescription ToOpenCollectionModelDescription(this string token, EngineConfig engineConfig)
         {
-            var segments = token
-                .Cut(engineConfig.Array.Open.Length, engineConfig.Array.Close.Length)
-                .Split(engineConfig.Placeholder.NamesDelimiter);
-
+            var (segments, _) = token.SplitToSegmentsAndParameters(engineConfig.Placeholder, engineConfig.Array, true);
             return new ModelDescription(segments, token);
         }
 
-        private static ModelDescription ToConditionModelDescription(this string token, EngineConfig engineConfig)
+        private static ModelDescription ToCloseCollectionModelDescription(this string token, EngineConfig engineConfig)
         {
-            var segments = token
-                .Cut(engineConfig.Condition.Begin.Length, engineConfig.Condition.End.Length)
-                .Split(engineConfig.Placeholder.NamesDelimiter);
+            var (segments, _) = token.SplitToSegmentsAndParameters(engineConfig.Placeholder, engineConfig.Array, false);
+            return new ModelDescription(segments, token);
+        }
 
+        private static ModelDescription ToOpenConditionModelDescription(this string token, EngineConfig engineConfig)
+        {
+            var (segments, _) = token.SplitToSegmentsAndParameters(engineConfig.Placeholder, engineConfig.Condition, true);
+            return new ModelDescription(segments, token);
+        }
+
+        private static ModelDescription ToCloseConditionModelDescription(this string token, EngineConfig engineConfig)
+        {
+            var (segments, _) = token.SplitToSegmentsAndParameters(engineConfig.Placeholder, engineConfig.Condition, false);
             return new ModelDescription(segments, token);
         }
 
         private static ModelDescription ToSingleValueModelDescription(this string token, EngineConfig engineConfig)
         {
-            var (name, parameters) = token
-                .Cut(engineConfig.Placeholder.Start.Length, engineConfig.Placeholder.End.Length)
-                .SplitBy(engineConfig.Placeholder.ParametersDelimiter);
-
-            var segments = name
-                .Split(engineConfig.Placeholder.NamesDelimiter);
-
+            var (segments, parameters) = token.SplitToSegmentsAndParameters(engineConfig.Placeholder, engineConfig.Placeholder, true);
             return new ModelDescription(segments, parameters, token);
+        }
+
+        private static (string[] nameSemgents, string parameters) SplitToSegmentsAndParameters(
+            this string token,
+            PlaceholderConfig placeholderConfig,
+            ITemplateConfig templateConfig,
+            bool isOpen)
+        {
+            var prefixLength = placeholderConfig.Start.Length;
+            if (!isOpen)
+            {
+                prefixLength += templateConfig.ClosePrefix.Length;
+            }
+            var suffixLength = placeholderConfig.End.Length;
+            if (isOpen)
+            {
+                suffixLength += templateConfig.OpenSuffix.Length;
+            }
+
+            var (name, parameters) = token
+                .Cut(prefixLength, suffixLength)
+                .SplitBy(placeholderConfig.ParametersDelimiter);
+
+            var segments = name.Split(placeholderConfig.NamesDelimiter);
+            return (segments, parameters);
         }
     }
 }
