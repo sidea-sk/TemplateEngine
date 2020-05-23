@@ -101,13 +101,13 @@ namespace Docx.Processors.Searching
 
             var e = startParagraph.NextSibling();
             var templateElements = new List<OpenXmlElement>();
-            while(e != endParagraph)
+            while(e != null && e != endParagraph)
             {
                 templateElements.Add(e.CloneNode(true));
                 e = e.NextSibling();
             }
 
-            return new  OpenXmlTemplate(new Run[0], templateElements, new Run[0]);
+            return new OpenXmlTemplate(new Run[0], templateElements, new Run[0]);
         }
     }
 }
