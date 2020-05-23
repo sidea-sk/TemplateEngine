@@ -1,6 +1,6 @@
 ﻿namespace Docx
 {
-    public class PlaceholderConfig
+    public class PlaceholderConfig : ITemplateConfig
     {
         public static readonly PlaceholderConfig Default = new PlaceholderConfig("{", "}", ".", ":");
 
@@ -21,9 +21,8 @@
         public string NamesDelimiter { get; }
         public string ParametersDelimiter { get; }
 
-        public string ToRegexPattern()
-        {
-            return Start + "." + End;
-        }
+        string ITemplateConfig.OpenSuffix => string.Empty;
+
+        string ITemplateConfig.ClosePrefix => string.Empty;
     }
 }

@@ -1,4 +1,5 @@
-﻿using Docx.DataModel;
+﻿using System.Linq;
+using Docx.DataModel;
 using Xunit;
 
 namespace Docx.Tests
@@ -101,6 +102,90 @@ namespace Docx.Tests
             var level1 = new ObjectModel("level1", level2, new SimpleModel("vl1", "value in level1"));
 
             this.Process(nameof(NestedObjectModelMultipleParagraphs), level1);
+        }
+
+        [Fact]
+        public void CollectionModel()
+        {
+            var items = Enumerable.Range(0, 5)
+                .Select(i => new SimpleModel("$i", () => i.ToString()));
+
+            var model = new CollectionModel(
+                "root",
+                items,
+                new Model[0]);
+
+            this.Process(nameof(CollectionModel), model);
+        }
+
+        [Fact]
+        public void CollectionModelInSameParagraph()
+        {
+            var items = Enumerable.Range(0, 5)
+                .Select(i => new SimpleModel("$i", () => i.ToString()));
+
+            var model = new CollectionModel(
+                "root",
+                items,
+                new Model[0]);
+
+            this.Process(nameof(CollectionModelInSameParagraph), model);
+        }
+
+        [Fact]
+        public void CollectionModelWithTableInParagraphs()
+        {
+            var items = Enumerable.Range(0, 5)
+                .Select(i => new SimpleModel("$i", () => i.ToString()));
+
+            var model = new CollectionModel(
+                "root",
+                items,
+                new Model[0]);
+
+            this.Process(nameof(CollectionModelWithTableInParagraphs), model);
+        }
+
+        [Fact]
+        public void CollectionOfObjectModel()
+        {
+            var items = Enumerable.Range(0, 5)
+                .Select(i => new ObjectModel("$i", new SimpleModel("value", () => i.ToString())));
+
+            var model = new CollectionModel(
+                "collection",
+                items,
+                new Model[0]);
+
+            this.Process(nameof(CollectionOfObjectModel), model);
+        }
+
+        [Fact]
+        public void SameNestedCollectionModel()
+        {
+            var items = Enumerable.Range(0, 5)
+                .Select(i => new SimpleModel("$i", () => i.ToString()));
+
+            var model = new CollectionModel(
+                "root",
+                items,
+                new Model[0]);
+
+            this.Process(nameof(SameNestedCollectionModel), model);
+        }
+
+        [Fact]
+        public void CollectionModelParagraphs()
+        {
+            var items = Enumerable.Range(0, 5)
+                .Select(i => new SimpleModel("$i", () => i.ToString()));
+
+            var model = new CollectionModel(
+                "root",
+                items,
+                new Model[0]);
+
+            this.Process(nameof(CollectionModelParagraphs), model);
         }
     }
 }

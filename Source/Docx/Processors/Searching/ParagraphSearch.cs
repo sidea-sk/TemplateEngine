@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Docx.Processors.Searching
@@ -34,20 +35,16 @@ namespace Docx.Processors.Searching
                         return new SingleValueTemplate(token);
                     case TokenType.CollectionBegin:
                         {
-                            var closeToken = paragraphs.FindCloseToken(token);
-                            return new ArrayTemplate(token, closeToken);
+                            var closeToken = paragraphs.FindCloseToken(token, config);
+                            var elementTemplate = paragraphs.GetTemplate(token, closeToken);
+                            return new ArrayTemplate(token, closeToken, elementTemplate);
                         }
                     case TokenType.ConditionBegin:
                         {
-                            var closeToken = paragraphs.FindCloseToken(token);
+                            var closeToken = paragraphs.FindCloseToken(token, config);
                             return new ConditionTemplate(token, closeToken);
                         }
                     default:
-                    //case TokenType.None:
-                    //case TokenType.Unknown:
-                    //    return Template.Empty;
-                    //case TokenType.CollectionEnd:
-                    //case TokenType.ConditionEnd:
                         throw new System.Exception("unexpected token");
                 }
             }
@@ -57,9 +54,60 @@ namespace Docx.Processors.Searching
 
         private static Token FindCloseToken(
             this IReadOnlyCollection<Paragraph> paragraphs,
-            Token openToken)
+            Token openToken,
+            EngineConfig config)
         {
+            var openPattern = config.OpeningTokenRegexPattern(openToken);
+            var closePattern = config.ClosingTokenRegexPattern(openToken);
+
+            var openCounter = 1;
+            for (var i = 0; i < paragraphs.Count; i++)
+            {
+                if(i < openToken.ParagraphIndex)
+                {
+                    continue;
+                }
+
+                var text = i == openToken.ParagraphIndex
+                    ? paragraphs.ElementAt(i).InnerText.Substring(openToken.TextIndex + openToken.ModelDescription.OriginalText.Length)
+                    : paragraphs.ElementAt(i).InnerText;
+
+                var openMatch = Regex.Match(text, openPattern, RegexOptions.IgnoreCase);
+                var closeMatch = Regex.Match(text, closePattern, RegexOptions.IgnoreCase);
+
+                if (openMatch.Success && (!closeMatch.Success || closeMatch.Index > openMatch.Index))
+                {
+                    openCounter++;
+                }
+
+                if (closeMatch.Success)
+                {
+                    openCounter--;
+
+                    if (openCounter == 0)
+                    {
+                        return config.CreateClosingToken(closeMatch.Groups[1], i);
+                    }
+                }
+            }
+
             return Token.None;
+        }
+
+        private static OpenXmlTemplate GetTemplate(this IReadOnlyCollection<Paragraph> paragraphs, Token startToken, Token endToken)
+        {
+            var startParagraph = paragraphs.ElementAt(startToken.ParagraphIndex);
+            var endParagraph = paragraphs.ElementAt(endToken.ParagraphIndex);
+
+            var e = startParagraph.NextSibling();
+            var templateElements = new List<OpenXmlElement>();
+            while(e != null && e != endParagraph)
+            {
+                templateElements.Add(e.CloneNode(true));
+                e = e.NextSibling();
+            }
+
+            return new OpenXmlTemplate(new Run[0], templateElements, new Run[0]);
         }
     }
 }

@@ -29,7 +29,7 @@ namespace Docx.DataModel
                 return this;
             }
 
-            return Model.Empty;
+            return this.Parent.Find(expression);
         }
     }
 }

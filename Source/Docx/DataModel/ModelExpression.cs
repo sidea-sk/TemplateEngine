@@ -28,5 +28,10 @@ namespace Docx.DataModel
         {
             return new ModelExpression(_segments.Skip(1));
         }
+
+        public string ToExpressionString(string nameSeparator)
+        {
+            return  string.Join(nameSeparator, _segments);
+        }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Docx.DataModel
 {
-    public abstract class Model : IModel
+    public abstract class Model
     {
         public static readonly Model Empty = new EmptyModel();
         public static readonly Model Exception = new ExceptionModel();

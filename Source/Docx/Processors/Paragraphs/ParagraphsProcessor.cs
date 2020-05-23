@@ -5,7 +5,7 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using Docx.DataModel;
 using Docx.Processors.Searching;
 
-namespace Docx.Processors.Paragraphs
+namespace Docx.Processors
 {
     internal class ParagraphsProcessor
     {
@@ -40,6 +40,17 @@ namespace Docx.Processors.Paragraphs
 
                         startTextIndex = endOfText;
                         break;
+
+                    case ArrayTemplate at:
+                        var lastParagraph = this.ProcessArrayTemplate(at, paragraphs, context);
+                        paragraphs = parent
+                            .ChildElements
+                            .OfType<Paragraph>()
+                            .SkipWhile(p => p != lastParagraph)
+                            .Skip(1)
+                            .ToArray();
+
+                        break;
                 }
             } while (template != Template.Empty);
         }
@@ -51,6 +62,48 @@ namespace Docx.Processors.Paragraphs
 
             var textEndIndex = p.ReplaceToken(template.Token, model);
             return textEndIndex;
+        }
+
+        private Paragraph ProcessArrayTemplate(
+            ArrayTemplate template,
+            IReadOnlyCollection<Paragraph> paragraphs,
+            Model context)
+        {
+            var collection = (CollectionModel)context.Find(template.Start.ModelDescription.Expression);
+            var startParagraph = paragraphs.ElementAt(template.Start.ParagraphIndex);
+            var endParagraph = paragraphs.ElementAt(template.End.ParagraphIndex);
+
+            if (startParagraph != endParagraph)
+            {
+                var s = startParagraph.NextSibling();
+                while(s != endParagraph)
+                {
+                    var t = s;
+                    s = t.NextSibling();
+                    t.Remove();
+                }
+            }
+
+            var compositeProcessor = new CompositeElementProcessor(_engineConfig);
+            var result = new List<OpenXmlElement>();
+
+            foreach (var item in collection.Items)
+            {
+                var itemBody = template.OpenXml.CreateBody();
+                compositeProcessor.Process(itemBody, item);
+
+                result.AddRange(itemBody.ChildElements.Select(e => e.CloneNode(true)));
+            }
+
+            startParagraph.ReplaceToken(template.Start, Model.Empty);
+            endParagraph.ReplaceToken(template.End, Model.Empty);
+
+            foreach (var e in result)
+            {
+                endParagraph.InsertBeforeSelf(e);
+            }
+
+            return endParagraph;
         }
     }
 }
