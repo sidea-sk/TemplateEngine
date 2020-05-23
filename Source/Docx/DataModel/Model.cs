@@ -8,6 +8,7 @@
         protected Model(string name)
         {
             this.Name = name;
+            this.Parent = Empty;
         }
 
         protected Model Parent { get; private set; }
