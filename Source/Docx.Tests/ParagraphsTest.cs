@@ -119,6 +119,20 @@ namespace Docx.Tests
         }
 
         [Fact]
+        public void CollectionOfObjectModel()
+        {
+            var items = Enumerable.Range(0, 5)
+                .Select(i => new ObjectModel("$i", new SimpleModel("value", () => i.ToString())));
+
+            var model = new CollectionModel(
+                "collection",
+                items,
+                new Model[0]);
+
+            this.Process(nameof(CollectionOfObjectModel), model);
+        }
+
+        [Fact]
         public void SameNestedCollectionModel()
         {
             var items = Enumerable.Range(0, 5)

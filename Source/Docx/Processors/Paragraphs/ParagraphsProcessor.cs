@@ -95,13 +95,12 @@ namespace Docx.Processors
             }
 
             startParagraph.ReplaceToken(template.Start, Model.Empty);
+            endParagraph.ReplaceToken(template.End, Model.Empty);
 
-            foreach(var e in result)
+            foreach (var e in result)
             {
                 endParagraph.InsertBeforeSelf(e);
             }
-
-            endParagraph.ReplaceToken(template.End, Model.Empty);
 
             return endParagraph;
         }
