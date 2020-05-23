@@ -49,6 +49,7 @@ namespace Docx.Processors
                             .SkipWhile(p => p != lastParagraph)
                             .Skip(1)
                             .ToArray();
+
                         break;
                 }
             } while (template != Template.Empty);
