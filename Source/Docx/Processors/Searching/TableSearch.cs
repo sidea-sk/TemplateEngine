@@ -66,7 +66,7 @@ namespace Docx.Processors.Searching
                 }
             }
 
-            return new ArrayTemplate(start, Token.None, null);
+            return new ArrayTemplate(start, Token.None, OpenXmlTemplate.Empty);
         }
 
         private static OpenXmlTemplate PrepareRowsTemplate(Token start, Token end, IEnumerable<TableRow> tableRows)
