@@ -11,7 +11,9 @@ namespace Docx.Processors.Searching
         public static Template FindNextTemplate(
             this IReadOnlyCollection<Paragraph> paragraphs,
             int firstParagraphStartTextIndex,
-            EngineConfig config)
+            EngineConfig config,
+            int tableRowIndex = -1,
+            int tableCellIndex = -1)
         {
             var pattern = config.OpeningTokenRegexPattern();
 
@@ -28,7 +30,7 @@ namespace Docx.Processors.Searching
                     continue;
                 }
 
-                var token = config.CreateOpeningToken(match.Groups[1], i, textIndexOffset);
+                var token = config.CreateOpeningToken(match.Groups[1], i, textIndexOffset, tableRowIndex, tableCellIndex);
                 switch (token.TokenType)
                 {
                     case TokenType.SingleValue:
@@ -52,15 +54,16 @@ namespace Docx.Processors.Searching
             return Template.Empty;
         }
 
-        private static Token FindCloseToken(
+        public static Token FindCloseToken(
             this IReadOnlyCollection<Paragraph> paragraphs,
             Token openToken,
-            EngineConfig config)
+            EngineConfig config,
+            int tableRowIndex = -1,
+            int tableCellIndex = -1)
         {
-            var openPattern = config.OpeningTokenRegexPattern(openToken);
+            // var openPattern = config.OpeningTokenRegexPattern(openToken);
             var closePattern = config.ClosingTokenRegexPattern(openToken);
 
-            var openCounter = 1;
             for (var i = 0; i < paragraphs.Count; i++)
             {
                 if(i < openToken.ParagraphIndex)
@@ -72,22 +75,10 @@ namespace Docx.Processors.Searching
                     ? paragraphs.ElementAt(i).InnerText.Substring(openToken.TextIndex + openToken.ModelDescription.OriginalText.Length)
                     : paragraphs.ElementAt(i).InnerText;
 
-                var openMatch = Regex.Match(text, openPattern, RegexOptions.IgnoreCase);
                 var closeMatch = Regex.Match(text, closePattern, RegexOptions.IgnoreCase);
-
-                if (openMatch.Success && (!closeMatch.Success || closeMatch.Index > openMatch.Index))
-                {
-                    openCounter++;
-                }
-
                 if (closeMatch.Success)
                 {
-                    openCounter--;
-
-                    if (openCounter == 0)
-                    {
-                        return config.CreateClosingToken(closeMatch.Groups[1], i);
-                    }
+                    return config.CreateClosingToken(closeMatch.Groups[1], i, tableRowIndex, tableCellIndex);
                 }
             }
 

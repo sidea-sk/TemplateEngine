@@ -11,13 +11,15 @@ namespace Docx.Processors.Searching
             this EngineConfig engineConfig,
             Group match,
             int paragraphIndex,
-            int textIndexOffset)
+            int textIndexOffset,
+            int tableRowIndex,
+            int tableCellIndex)
         {
             ModelDescription modelDescription;
             if (engineConfig.IsArrayOpenToken(match.Value))
             {
                 modelDescription = match.Value.ToOpenCollectionModelDescription(engineConfig);
-                return Token.CollectionBegin(modelDescription, match.Index + textIndexOffset, paragraphIndex);
+                return Token.CollectionBegin(modelDescription, match.Index + textIndexOffset, paragraphIndex, tableRowIndex, tableCellIndex);
             }
 
             if (engineConfig.IsConditionToken(match.Value))
@@ -27,18 +29,20 @@ namespace Docx.Processors.Searching
             }
 
             modelDescription = match.Value.ToSingleValueModelDescription(engineConfig);
-            return Token.SingleValue(modelDescription, match.Index + textIndexOffset, paragraphIndex);
+            return Token.SingleValue(modelDescription, match.Index + textIndexOffset, paragraphIndex, tableCellIndex, tableRowIndex);
         }
 
         public static Token CreateClosingToken(
             this EngineConfig engineConfig,
             Group match,
-            int paragraphIndex)
+            int paragraphIndex,
+            int tableRowIndex,
+            int tableCellIndex)
         {
             if (engineConfig.IsArrayCloseToken(match.Value))
             {
                 var description = match.Value.ToCloseCollectionModelDescription(engineConfig);
-                return Token.CollectionEnd(description, match.Index, paragraphIndex);
+                return Token.CollectionEnd(description, match.Index, paragraphIndex, tableRowIndex, tableCellIndex);
             }
 
             if (engineConfig.IsConditionToken(match.Value))
