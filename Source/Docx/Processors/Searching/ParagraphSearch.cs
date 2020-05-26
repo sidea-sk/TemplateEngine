@@ -13,9 +13,12 @@ namespace Docx.Processors.Searching
             int firstParagraphStartTextIndex,
             EngineConfig config,
             int tableRowIndex = -1,
-            int tableCellIndex = -1)
+            int tableCellIndex = -1,
+            bool simpleValue = true,
+            bool array = true,
+            bool condition = true)
         {
-            var pattern = config.OpeningTokenRegexPattern();
+            var pattern = config.OpeningTokenRegexPattern(simpleValue: simpleValue, array: array, condition: condition);
 
             for (var i = 0; i < paragraphs.Count; i++)
             {
@@ -37,13 +40,13 @@ namespace Docx.Processors.Searching
                         return new SingleValueTemplate(token);
                     case TokenType.CollectionBegin:
                         {
-                            var closeToken = paragraphs.FindCloseToken(token, config);
+                            var closeToken = paragraphs.FindCloseToken(token, config, continueAfterOpenToken: true, tableRowIndex, tableCellIndex);
                             var elementTemplate = paragraphs.GetTemplate(token, closeToken);
                             return new ArrayTemplate(token, closeToken, elementTemplate);
                         }
                     case TokenType.ConditionBegin:
                         {
-                            var closeToken = paragraphs.FindCloseToken(token, config);
+                            var closeToken = paragraphs.FindCloseToken(token, config, continueAfterOpenToken: true);
                             return new ConditionTemplate(token, closeToken);
                         }
                     default:
@@ -58,6 +61,7 @@ namespace Docx.Processors.Searching
             this IReadOnlyCollection<Paragraph> paragraphs,
             Token openToken,
             EngineConfig config,
+            bool continueAfterOpenToken,
             int tableRowIndex = -1,
             int tableCellIndex = -1)
         {
@@ -66,13 +70,13 @@ namespace Docx.Processors.Searching
 
             for (var i = 0; i < paragraphs.Count; i++)
             {
-                if(i < openToken.ParagraphIndex)
+                if(i < openToken.Position.ParagraphIndex)
                 {
                     continue;
                 }
 
-                var text = i == openToken.ParagraphIndex
-                    ? paragraphs.ElementAt(i).InnerText.Substring(openToken.TextIndex + openToken.ModelDescription.OriginalText.Length)
+                var text = continueAfterOpenToken && i == openToken.Position.ParagraphIndex
+                    ? paragraphs.ElementAt(i).InnerText.Substring(openToken.Position.TextIndex + openToken.ModelDescription.OriginalText.Length)
                     : paragraphs.ElementAt(i).InnerText;
 
                 var closeMatch = Regex.Match(text, closePattern, RegexOptions.IgnoreCase);
@@ -87,8 +91,13 @@ namespace Docx.Processors.Searching
 
         private static OpenXmlTemplate GetTemplate(this IReadOnlyCollection<Paragraph> paragraphs, Token startToken, Token endToken)
         {
-            var startParagraph = paragraphs.ElementAt(startToken.ParagraphIndex);
-            var endParagraph = paragraphs.ElementAt(endToken.ParagraphIndex);
+            if(endToken.Position.ParagraphIndex == -1)
+            {
+                return OpenXmlTemplate.Empty;
+            }
+
+            var startParagraph = paragraphs.ElementAt(startToken.Position.ParagraphIndex);
+            var endParagraph = paragraphs.ElementAt(endToken.Position.ParagraphIndex);
 
             var e = startParagraph.NextSibling();
             var templateElements = new List<OpenXmlElement>();

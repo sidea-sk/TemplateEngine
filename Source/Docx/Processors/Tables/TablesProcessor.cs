@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Docx.DataModel;
@@ -28,39 +30,73 @@ namespace Docx.Processors
 
         private void Process(Table table, Model context)
         {
-            var template = Template.Empty;
+            Template template;
+            var lastProcessedTableRow = -1;
             do
             {
                 template = table.FindNextTemplate(_engineConfig);
                 switch (template)
                 {
-                    case SingleValueTemplate st:
-                        this.ProcessTemplate(st, table, context);
-                        break;
                     case ArrayTemplate at:
+                        this.ProcessRowsBetweenIndeces(table, lastProcessedTableRow, at.Start.Position.RowIndex - 1, context);
+                        lastProcessedTableRow = this.ProcessTemplate(at, table, context);
+                        break;
+                    case ConditionTemplate ct:
                         break;
                 }
-                // process template
             }
             while (template != Template.Empty);
+
+            this.ProcessRowsBetweenIndeces(
+                table,
+                lastProcessedTableRow,
+                table.Rows().Count() - 1,
+                context);
         }
 
-        private int ProcessTemplate(SingleValueTemplate template, Table table, Model context)
+        private int ProcessTemplate(ArrayTemplate template, Table table, Model context)
         {
-            var p = table
-                .Rows().ElementAt(template.Token.RowIndex)
-                .Cells().ElementAt(template.Token.CellIndex)
-                .Paragraphs().ElementAt(template.Token.ParagraphIndex);
+            var collection = (CollectionModel)context.Find(template.Start.ModelDescription.Expression);
+            var resultRows = new List<TableRow>();
+            foreach(var item in collection.Items)
+            {
+                foreach(var row in template.OpenXml.Elements.Select(e => e.CloneNode(true)).Cast<TableRow>())
+                {
+                    this.ProcessCellsOfRow(row, item);
+                    resultRows.Add(row);
+                }
+            }
 
-            var model = context.Find(template.Token.ModelDescription.Expression);
+            var originalRows = table.Rows()
+                .GetTemplateRows(template)
+                .ToArray();
 
-            var textEndIndex = p.ReplaceToken(template.Token, model);
-            return textEndIndex;
+            for (var i = 0; i < resultRows.Count; i++)
+            {
+                originalRows.First().InsertBeforeSelf(resultRows[i]);
+            }
+
+            originalRows.RemoveSelfFromParent();
+
+            return template.Start.Position.RowIndex + resultRows.Count;
         }
 
-        private void ProcessArrayTemplate(ArrayTemplate template, Table table, Model context)
+        private void ProcessRowsBetweenIndeces(Table table, int firstIndex, int lastIndex, Model context)
         {
+            foreach(var row in table.Rows().Skip(firstIndex).Take(lastIndex - firstIndex))
+            {
+                this.ProcessCellsOfRow(row, context);
+            }
+        }
 
+        private void ProcessCellsOfRow(TableRow row, Model context)
+        {
+            var compositeProcessor = new CompositeElementProcessor(_engineConfig);
+
+            foreach (var cell in row.Cells())
+            {
+                compositeProcessor.Process(cell, context);
+            }
         }
     }
 }
