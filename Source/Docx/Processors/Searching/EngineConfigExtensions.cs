@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Docx.DataModel;
 
 namespace Docx.Processors.Searching
@@ -11,49 +12,79 @@ namespace Docx.Processors.Searching
             this EngineConfig engineConfig,
             Group match,
             int paragraphIndex,
-            int textIndexOffset)
+            int textIndexOffset,
+            int tableRowIndex,
+            int tableCellIndex)
         {
             ModelDescription modelDescription;
+            TokenPosition tokenPosition;
+
             if (engineConfig.IsArrayOpenToken(match.Value))
             {
                 modelDescription = match.Value.ToOpenCollectionModelDescription(engineConfig);
-                return Token.CollectionBegin(modelDescription, match.Index + textIndexOffset, paragraphIndex);
+                tokenPosition = new TokenPosition(paragraphIndex, match.Index + textIndexOffset, tableRowIndex, tableCellIndex);
+                return Token.CollectionBegin(modelDescription, tokenPosition);
             }
 
             if (engineConfig.IsConditionToken(match.Value))
             {
                 modelDescription = match.Value.ToOpenConditionModelDescription(engineConfig);
-                return Token.ConditionBegin(modelDescription, match.Index + textIndexOffset, paragraphIndex);
+                tokenPosition = new TokenPosition(paragraphIndex, match.Index + textIndexOffset, tableRowIndex, tableCellIndex);
+                return Token.ConditionBegin(modelDescription, tokenPosition);
             }
 
             modelDescription = match.Value.ToSingleValueModelDescription(engineConfig);
-            return Token.SingleValue(modelDescription, match.Index + textIndexOffset, paragraphIndex);
+            tokenPosition = new TokenPosition(paragraphIndex, match.Index + textIndexOffset);
+            return Token.SingleValue(modelDescription, tokenPosition);
         }
 
         public static Token CreateClosingToken(
             this EngineConfig engineConfig,
             Group match,
-            int paragraphIndex)
+            int paragraphIndex,
+            int tableRowIndex,
+            int tableCellIndex)
         {
+            var position = new TokenPosition(paragraphIndex, match.Index, tableRowIndex, tableCellIndex);
+
             if (engineConfig.IsArrayCloseToken(match.Value))
             {
                 var description = match.Value.ToCloseCollectionModelDescription(engineConfig);
-                return Token.CollectionEnd(description, match.Index, paragraphIndex);
+                return Token.CollectionEnd(description, position);
             }
 
             if (engineConfig.IsConditionToken(match.Value))
             {
                 var description = match.Value.ToCloseConditionModelDescription(engineConfig);
-                return Token.ConditionEnd(description, match.Index, paragraphIndex);
+                return Token.ConditionEnd(description, position);
             }
 
             throw new System.Exception("The match is not any of closing tokens");
         }
 
-        public static string OpeningTokenRegexPattern(this EngineConfig engineConfig)
+        public static string OpeningTokenRegexPattern(
+            this EngineConfig engineConfig,
+            bool simpleValue,
+            bool array,
+            bool condition)
         {
+            var temp = new List<string>();
+            if (simpleValue)
+            {
+                temp.Add(engineConfig.SimpleValueRegexPattern());
+            }
+            if (array)
+            {
+                temp.Add(engineConfig.ArrayOpenRegexPattern(anyText));
+            }
+
+            if (condition)
+            {
+                temp.Add(engineConfig.ConditionOpenRegexPattern(anyText));
+            }
+
             return $"^{anyText}"
-                + engineConfig.SimpleValueRegexPattern().ToRegexGroup()
+                + string.Join("|", temp).ToRegexGroup()
                 + $"{anyText}$";
         }
 
@@ -103,7 +134,7 @@ namespace Docx.Processors.Searching
 
         private static bool IsConditionToken(this EngineConfig engineConfig, string token)
         {
-            return Regex.IsMatch(token, engineConfig.ConditionOpenRegexPattern());
+            return Regex.IsMatch(token, engineConfig.ConditionOpenRegexPattern(token));
         }
 
         private static string SimpleValueRegexPattern(this EngineConfig engineConfig)
@@ -123,9 +154,9 @@ namespace Docx.Processors.Searching
                 .ToRegexGroup();
         }
 
-        private static string ConditionOpenRegexPattern(this EngineConfig engineConfig)
+        private static string ConditionOpenRegexPattern(this EngineConfig engineConfig, string tokenRegex)
         {
-            return $"{engineConfig.Placeholder.Start.Escape()}{anyText}{engineConfig.Condition.Begin.Escape()}{engineConfig.Placeholder.End.Escape()}"
+            return $"{engineConfig.Placeholder.Start.Escape()}{tokenRegex}{engineConfig.Condition.Begin.Escape()}{engineConfig.Placeholder.End.Escape()}"
                 .ToRegexGroup();
         }
 

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Docx.DataModel
 {
-    [DebuggerDisplay("{ToString()}")]
+    [DebuggerDisplay("{ToExpressionString()}")]
     internal class ModelExpression
     {
         private readonly string[] _segments;
@@ -19,19 +19,14 @@ namespace Docx.DataModel
 
         public bool IsFinal => _segments.Length <= 1;
 
-        public override string ToString()
-        {
-            return string.Join(".", _segments);
-        }
-
         public ModelExpression Child()
         {
             return new ModelExpression(_segments.Skip(1));
         }
 
-        public string ToExpressionString(string nameSeparator)
+        public string ToExpressionString(string nameSeparator = ".")
         {
-            return  string.Join(nameSeparator, _segments);
+            return string.Join(nameSeparator, _segments);
         }
     }
 }

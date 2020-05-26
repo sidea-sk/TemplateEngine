@@ -4,7 +4,7 @@ using System.Diagnostics;
 namespace Docx.DataModel
 {
     [DebuggerDisplay("{Name}: {FormattedValue()}")]
-    public sealed class SimpleModel : Model
+    public class SimpleModel : Model
     {
         private readonly Func<string> _formattedValueFunc;
 

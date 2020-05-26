@@ -12,12 +12,16 @@ namespace Docx
                 .OfType<T>();
 
         public static IEnumerable<Paragraph> Paragraphs(this OpenXmlCompositeElement parent) => parent
-                .ChildElements
-                .OfType<Paragraph>();
+                .Childs<Paragraph>();
 
         public static IEnumerable<Run> Runs(this Paragraph paragraph) => paragraph
-                .ChildElements
-                .OfType<Run>();
+                .Childs<Run>();
+
+        public static IEnumerable<TableRow> Rows(this Table table) => table
+                .Childs<TableRow>();
+
+        public static IEnumerable<TableCell> Cells(this TableRow row) => row
+                .Childs<TableCell>();
 
         public static void RemoveSelfFromParent<T>(this IEnumerable<T> children)
             where T: OpenXmlElement

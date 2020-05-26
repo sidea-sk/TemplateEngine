@@ -1,5 +1,8 @@
-﻿namespace Docx.DataModel
+﻿using System.Diagnostics;
+
+namespace Docx.DataModel
 {
+    [DebuggerDisplay("{Name}")]
     public abstract class Model
     {
         public static readonly Model Empty = new EmptyModel();

@@ -15,7 +15,7 @@ namespace Docx.Processors
         {
             var runs = paragraph.Runs().ToArray();
 
-            var (startRunIndex, endRunIndex) = runs.FindIndeces(token.TextIndex, token.ModelDescription.OriginalText.Length);
+            var (startRunIndex, endRunIndex) = runs.FindIndeces(token.Position.TextIndex, token.ModelDescription.OriginalText.Length);
 
             var affectedRuns = runs
                 .Skip(startRunIndex)
@@ -34,14 +34,14 @@ namespace Docx.Processors
                 var replaceLength = token.ModelDescription.OriginalText.Length
                     - previousRunsTextLength
                     - affectedRuns.Take(affectedRuns.Length - 1).TextLength()
-                    + token.TextIndex
+                    + token.Position.TextIndex
                     ;
 
                 endRun.ReplaceText(0, replaceLength, string.Empty);
             }
 
             var replacement = model.FormattedValue();
-            var replaceFromIndex = token.TextIndex - previousRunsTextLength;
+            var replaceFromIndex = token.Position.TextIndex - previousRunsTextLength;
             startRun.ReplaceText(replaceFromIndex, token.ModelDescription.OriginalText.Length, replacement);
 
             affectedRuns
@@ -49,7 +49,7 @@ namespace Docx.Processors
                 .Take(affectedRuns.Length - 2)
                 .RemoveSelfFromParent();
 
-            return token.TextIndex + replacement.Length;
+            return token.Position.TextIndex + replacement.Length;
         }
 
         private static (int startRun, int endRun) FindIndeces(this IEnumerable<Run> runs, int tokenStartTextIndex, int tokenLength)

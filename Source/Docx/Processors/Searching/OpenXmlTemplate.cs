@@ -9,6 +9,10 @@ namespace Docx.Processors.Searching
     {
         public static readonly OpenXmlTemplate Empty = new OpenXmlTemplate(new Run[0], new OpenXmlElement[0], new Run[0]);
 
+        public OpenXmlTemplate(IEnumerable<OpenXmlElement> elements) : this(new Run[0], elements, new Run[0])
+        {
+        }
+
         public OpenXmlTemplate(
             IEnumerable<Run> begin,
             IEnumerable<OpenXmlElement> elements,

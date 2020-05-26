@@ -35,7 +35,7 @@ namespace Docx.Processors
                         var endOfText = this.ProcessTemplate(svt, paragraphs, context);
 
                         paragraphs = paragraphs
-                            .Skip(svt.Token.ParagraphIndex)
+                            .Skip(svt.Token.Position.ParagraphIndex)
                             .ToArray();
 
                         startTextIndex = endOfText;
@@ -57,7 +57,7 @@ namespace Docx.Processors
 
         private int ProcessTemplate(SingleValueTemplate template, IReadOnlyCollection<Paragraph> paragraphs, Model context)
         {
-            var p = paragraphs.ElementAt(template.Token.ParagraphIndex);
+            var p = paragraphs.ElementAt(template.Token.Position.ParagraphIndex);
             var model = context.Find(template.Token.ModelDescription.Expression);
 
             var textEndIndex = p.ReplaceToken(template.Token, model);
@@ -70,8 +70,8 @@ namespace Docx.Processors
             Model context)
         {
             var collection = (CollectionModel)context.Find(template.Start.ModelDescription.Expression);
-            var startParagraph = paragraphs.ElementAt(template.Start.ParagraphIndex);
-            var endParagraph = paragraphs.ElementAt(template.End.ParagraphIndex);
+            var startParagraph = paragraphs.ElementAt(template.Start.Position.ParagraphIndex);
+            var endParagraph = paragraphs.ElementAt(template.End.Position.ParagraphIndex);
 
             if (startParagraph != endParagraph)
             {
