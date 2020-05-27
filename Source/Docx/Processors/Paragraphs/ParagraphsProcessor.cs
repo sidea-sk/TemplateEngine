@@ -11,13 +11,11 @@ namespace Docx.Processors
     {
         private readonly EngineConfig _engineConfig;
         private readonly IImageProcessor _imageProcessor;
-        private readonly CompositeElementProcessor _compositeElementProcessor;
 
         public ParagraphsProcessor(EngineConfig engineConfig, IImageProcessor imageProcessor)
         {
             _engineConfig = engineConfig;
             _imageProcessor = imageProcessor;
-            _compositeElementProcessor = new CompositeElementProcessor(engineConfig, imageProcessor);
         }
 
         public void Process(OpenXmlCompositeElement parent, Model context)
@@ -89,11 +87,12 @@ namespace Docx.Processors
             }
 
             var result = new List<OpenXmlElement>();
+            var compositeElementProcessor = new CompositeElementProcessor(_engineConfig, _imageProcessor);
 
             foreach (var item in collection.Items)
             {
                 var itemBody = template.OpenXml.CreateBody();
-                _compositeElementProcessor.Process(itemBody, item);
+                compositeElementProcessor.Process(itemBody, item);
 
                 result.AddRange(itemBody.ChildElements.Select(e => e.CloneNode(true)));
             }

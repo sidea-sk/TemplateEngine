@@ -10,12 +10,12 @@ namespace Docx.Processors
     internal class TablesProcessor
     {
         private readonly EngineConfig _engineConfig;
-        private readonly CompositeElementProcessor _compositeElementProcessor;
+        private readonly IImageProcessor _imageProcessor;
 
         public TablesProcessor(EngineConfig engineConfig, IImageProcessor imageProcessor)
         {
             _engineConfig = engineConfig;
-            _compositeElementProcessor = new CompositeElementProcessor(_engineConfig, imageProcessor);
+            _imageProcessor = imageProcessor;
         }
 
         public void Process(OpenXmlCompositeElement parent, Model context)
@@ -92,9 +92,11 @@ namespace Docx.Processors
 
         private void ProcessCellsOfRow(TableRow row, Model context)
         {
+            var compositeElementProcessor = new CompositeElementProcessor(_engineConfig, _imageProcessor);
+
             foreach (var cell in row.Cells())
             {
-                _compositeElementProcessor.Process(cell, context);
+                compositeElementProcessor.Process(cell, context);
             }
         }
     }
