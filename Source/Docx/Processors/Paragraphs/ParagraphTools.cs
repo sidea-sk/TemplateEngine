@@ -46,15 +46,13 @@ namespace Docx.Processors
 
             switch (model)
             {
-                case SimpleModel _:
-                    replacement = model.FormattedValue();
-                    break;
                 case ImageModel im:
                     replacement = string.Empty;
                     //  insert in/after start run
                     break;
                 default:
-                    throw new System.Exception("Unsupported model");
+                    replacement = model.FormattedValue();
+                    break;
             }
 
             startRun.ReplaceText(replaceFromIndex, token.ModelDescription.OriginalText.Length, replacement);
