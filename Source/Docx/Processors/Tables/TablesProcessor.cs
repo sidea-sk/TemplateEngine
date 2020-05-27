@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Wordprocessing;
@@ -11,10 +10,12 @@ namespace Docx.Processors
     internal class TablesProcessor
     {
         private readonly EngineConfig _engineConfig;
+        private readonly CompositeElementProcessor _compositeElementProcessor;
 
-        public TablesProcessor(EngineConfig engineConfig)
+        public TablesProcessor(EngineConfig engineConfig, IImageProcessor imageProcessor)
         {
             _engineConfig = engineConfig;
+            _compositeElementProcessor = new CompositeElementProcessor(_engineConfig, imageProcessor);
         }
 
         public void Process(OpenXmlCompositeElement parent, Model context)
@@ -91,11 +92,9 @@ namespace Docx.Processors
 
         private void ProcessCellsOfRow(TableRow row, Model context)
         {
-            var compositeProcessor = new CompositeElementProcessor(_engineConfig);
-
             foreach (var cell in row.Cells())
             {
-                compositeProcessor.Process(cell, context);
+                _compositeElementProcessor.Process(cell, context);
             }
         }
     }

@@ -11,7 +11,8 @@ namespace Docx.Processors
         public static int ReplaceToken(
             this Paragraph paragraph,
             Token token,
-            Model model)
+            Model model,
+            IImageProcessor imageProcessor)
         {
             var runs = paragraph.Runs().ToArray();
 
@@ -40,8 +41,22 @@ namespace Docx.Processors
                 endRun.ReplaceText(0, replaceLength, string.Empty);
             }
 
-            var replacement = model.FormattedValue();
             var replaceFromIndex = token.Position.TextIndex - previousRunsTextLength;
+            string replacement;
+
+            switch (model)
+            {
+                case SimpleModel _:
+                    replacement = model.FormattedValue();
+                    break;
+                case ImageModel im:
+                    replacement = string.Empty;
+                    //  insert in/after start run
+                    break;
+                default:
+                    throw new System.Exception("Unsupported model");
+            }
+
             startRun.ReplaceText(replaceFromIndex, token.ModelDescription.OriginalText.Length, replacement);
 
             affectedRuns
