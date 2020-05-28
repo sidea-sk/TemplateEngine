@@ -44,25 +44,28 @@ namespace Docx.Processors
             var replaceFromIndex = token.Position.TextIndex - previousRunsTextLength;
             string replacement;
 
+            int replacementLength;
             switch (model)
             {
                 case ImageModel im:
-                    replacement = string.Empty;
-                    //  insert in/after start run
+                    replacementLength = 0;
+                    startRun.ReplaceText(replaceFromIndex, token.ModelDescription.OriginalText.Length, string.Empty);
+                    var imageRun = imageProcessor.AddImage(im);
+                    startRun.InsertAfterSelf(imageRun);
                     break;
                 default:
                     replacement = model.FormattedValue();
+                    replacementLength = replacement.Length;
+                    startRun.ReplaceText(replaceFromIndex, token.ModelDescription.OriginalText.Length, model.FormattedValue());
                     break;
             }
-
-            startRun.ReplaceText(replaceFromIndex, token.ModelDescription.OriginalText.Length, replacement);
 
             affectedRuns
                 .Skip(1)
                 .Take(affectedRuns.Length - 2)
                 .RemoveSelfFromParent();
 
-            return token.Position.TextIndex + replacement.Length;
+            return token.Position.TextIndex + replacementLength;
         }
 
         private static (int startRun, int endRun) FindIndeces(this IEnumerable<Run> runs, int tokenStartTextIndex, int tokenLength)

@@ -18,6 +18,14 @@ namespace Docx.Tests
             this.Process(nameof(Image), model);
         }
 
+        [Fact]
+        public void ImageInTheMiddleOfRun()
+        {
+            var model = this.LoadFromFile("image", "sample.jpeg");
+
+            this.Process(nameof(ImageInTheMiddleOfRun), model);
+        }
+
         private ImageModel LoadFromFile(string modelName, string imageName)
         {
             var data = File.ReadAllBytes(this.SamplesFolder + "/" + imageName);
