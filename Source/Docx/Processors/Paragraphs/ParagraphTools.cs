@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Docx.DataModel;
 using Docx.Processors.Searching;
@@ -50,6 +51,8 @@ namespace Docx.Processors
                 case ImageModel im:
                     replacementLength = 0;
                     startRun.ReplaceText(replaceFromIndex, token.ModelDescription.OriginalText.Length, string.Empty);
+                    startRun.SplitIntoTwoRuns(replaceFromIndex);
+
                     var imageRun = imageProcessor.AddImage(im);
                     startRun.InsertAfterSelf(imageRun);
                     break;
@@ -129,6 +132,72 @@ namespace Docx.Processors
                 t.Text = prefixText + replacement + tailText;
                 break;
             }
+        }
+
+        private static void SplitIntoTwoRuns(this Run run, int atTextIndex)
+        {
+            if(run.InnerText.Length - 1 == atTextIndex)
+            {
+                return;
+            }
+
+            var aggregatedTextLength = 0;
+            Text splittingText = null;
+            int splitAtTextIndex = -1;
+
+            foreach(var t in run.Childs<Text>().ToArray())
+            {
+                if(t.Text.Length + aggregatedTextLength - 1 < atTextIndex)
+                {
+                    aggregatedTextLength += t.Text.Length;
+                    continue;
+                }
+
+                splittingText = t;
+                splitAtTextIndex = atTextIndex - aggregatedTextLength;
+                break;
+            }
+
+            if(splittingText == null)
+            {
+                return;
+            }
+
+            var tail = new Text(splittingText.Text.Substring(splitAtTextIndex));
+            if(tail.Text.Length > 0 && char.IsWhiteSpace(tail.Text[0]))
+            {
+                tail.Space = SpaceProcessingModeValues.Preserve;
+            }
+
+            splittingText.Text = splittingText.Text.Substring(0, splitAtTextIndex);
+            if(splittingText.Text.Length > 0 && char.IsWhiteSpace(splittingText.Text.Last()))
+            {
+                splittingText.Space = SpaceProcessingModeValues.Preserve;
+            }
+
+            var newRun = new Run();
+            if(run.RunProperties != null)
+            {
+                newRun.RunProperties = (RunProperties)run.RunProperties.CloneNode(true);
+            }
+
+            var childsToReplace = run
+                .ChildElements
+                .Where(c => !(c is RunProperties))
+                .ItemsAfter(splittingText)
+                .ToArray();
+
+            var clones = childsToReplace
+                .Select(c => c.CloneNode(true))
+                .Reverse()
+                .ToArray();
+
+            childsToReplace.RemoveSelfFromParent();
+
+            newRun.InsertAt(tail, 0);
+            clones.InsertSelfAfter(tail);
+
+            run.InsertAfterSelf(newRun);
         }
     }
 }
