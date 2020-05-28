@@ -53,7 +53,7 @@ namespace Docx.Processors
                     startRun.ReplaceText(replaceFromIndex, token.ModelDescription.OriginalText.Length, string.Empty);
                     startRun.SplitIntoTwoRuns(replaceFromIndex);
 
-                    var imageRun = imageProcessor.AddImage(im);
+                    var imageRun = imageProcessor.AddImage(im, token.ModelDescription.Parameters);
                     startRun.InsertAfterSelf(imageRun);
                     break;
                 default:

@@ -26,6 +26,14 @@ namespace Docx.Tests
             this.Process(nameof(ImageInTheMiddleOfRun), model);
         }
 
+        [Fact]
+        public void ImageSizeParameters()
+        {
+            var model = this.LoadFromFile("image", "sample.jpeg");
+
+            this.Process(nameof(ImageSizeParameters), model);
+        }
+
         private ImageModel LoadFromFile(string modelName, string imageName)
         {
             var data = File.ReadAllBytes(this.SamplesFolder + "/" + imageName);
