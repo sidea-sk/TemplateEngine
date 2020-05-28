@@ -16,6 +16,15 @@ namespace Docx.Processors.Images
             return extension switch
             { 
                 "png" => ImagePartType.Png,
+                "jpg" => ImagePartType.Jpeg,
+                "jpeg" => ImagePartType.Jpeg,
+                "bmp" => ImagePartType.Bmp,
+                "emf" => ImagePartType.Emf,
+                "gif" => ImagePartType.Gif,
+                "ico" => ImagePartType.Icon,
+                "tiff" => ImagePartType.Tiff,
+                "wmf" => ImagePartType.Wmf,
+                "pcx" => ImagePartType.Pcx,
                 _ => ImagePartType.Bmp
             };
         }
