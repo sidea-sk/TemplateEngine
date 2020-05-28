@@ -8,8 +8,6 @@ namespace Docx.DataModel
     {
         public static readonly ModelDescription Empty = new ModelDescription(new string[0], string.Empty, string.Empty);
 
-        private readonly string _parameters;
-
         public ModelDescription(
             IEnumerable<string> segments,
             string originalText) : this(segments, string.Empty, originalText)
@@ -21,12 +19,14 @@ namespace Docx.DataModel
             string parameters,
             string originalText)
         {
-            _parameters = parameters;
+            this.Parameters = parameters;
             this.Expression = new ModelExpression(segments);
             this.OriginalText = originalText;
         }
 
         public ModelExpression Expression { get; }
+
+        public string Parameters { get; }
 
         public string OriginalText { get; }
     }

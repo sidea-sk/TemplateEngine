@@ -21,7 +21,7 @@ namespace Docx.Processors
             _mainDocumentPart = mainDocumentPart;
         }
 
-        public Run AddImage(ImageModel model)
+        public Run AddImage(ImageModel model, string parameters)
         {
             var imagePartType = model.ImageName.ImagePartTypeFromName();
             var imagePart = _mainDocumentPart.AddImagePart(imagePartType);
@@ -31,7 +31,8 @@ namespace Docx.Processors
                 imagePart.FeedData(ms);
             }
 
-            var (width, height) = this.GetImageSizeInEmu(model.Data);
+            var ip = ImageParameters.FromString(parameters);
+            var (width, height) = this.GetImageSizeInEmu(model.Data, ip);
             var run = this.CreateRun(model.ImageName, _mainDocumentPart.GetIdOfPart(imagePart), width, height);
             return run;
         }
@@ -103,13 +104,20 @@ namespace Docx.Processors
             return run;
         }
 
-        private (long width, long height) GetImageSizeInEmu(byte[] data)
+        private (long width, long height) GetImageSizeInEmu(byte[] data, ImageParameters imageParameters)
         {
+            long pixelWidth;
+            long pixelHeight;
+
             using(var ms = new MemoryStream(data))
             {
                 var image = Image.FromStream(ms);
-                return (image.Width * 9525, image.Height * 9525);
+                pixelWidth = image.Width.PxToEmu();
+                pixelHeight = image.Height.PxToEmu();
             }
+
+            var (width, height) = imageParameters.Scale(pixelWidth, pixelHeight);
+            return (width, height);
         }
     }
 }

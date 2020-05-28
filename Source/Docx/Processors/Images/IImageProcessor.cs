@@ -5,6 +5,6 @@ namespace Docx.Processors
 {
     internal interface IImageProcessor
     {
-        Run AddImage(ImageModel model);
+        Run AddImage(ImageModel model, string parameters);
     }
 }
