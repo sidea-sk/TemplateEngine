@@ -32,6 +32,11 @@ namespace Docx.Processors.Images
 
         private static long? TryGetEmu(this string parameter)
         {
+            if (string.IsNullOrWhiteSpace(parameter))
+            {
+                return null;
+            }
+
             var match = Regex.Match(parameter, NumberWithUnitPattern);
             if (!match.Success || match.Groups.Count != 3)
             {
