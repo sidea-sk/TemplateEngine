@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Wordprocessing;
@@ -22,6 +23,22 @@ namespace Docx
 
         public static IEnumerable<TableCell> Cells(this TableRow row) => row
                 .Childs<TableCell>();
+
+        public static IEnumerable<T> ItemsAfter<T>(this IEnumerable<T> source, T afterItem)
+        {
+            return source
+                .SkipWhile(i => i.Equals(afterItem))
+                .Skip(1);
+        }
+
+        public static void InsertSelfAfter<T>(this IEnumerable<T> children, T afterItem)
+            where T : OpenXmlElement
+        {
+            foreach(var c in children.Reverse())
+            {
+                afterItem.InsertAfterSelf(c);
+            }
+        }
 
         public static void RemoveSelfFromParent<T>(this IEnumerable<T> children)
             where T: OpenXmlElement

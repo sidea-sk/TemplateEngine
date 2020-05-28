@@ -10,10 +10,12 @@ namespace Docx.Processors
     internal class ParagraphsProcessor
     {
         private readonly EngineConfig _engineConfig;
+        private readonly IImageProcessor _imageProcessor;
 
-        public ParagraphsProcessor(EngineConfig engineConfig)
+        public ParagraphsProcessor(EngineConfig engineConfig, IImageProcessor imageProcessor)
         {
             _engineConfig = engineConfig;
+            _imageProcessor = imageProcessor;
         }
 
         public void Process(OpenXmlCompositeElement parent, Model context)
@@ -42,7 +44,7 @@ namespace Docx.Processors
                         break;
 
                     case ArrayTemplate at:
-                        var lastParagraph = this.ProcessArrayTemplate(at, paragraphs, context);
+                        var lastParagraph = this.ProcessTemplate(at, paragraphs, context);
                         paragraphs = parent
                             .ChildElements
                             .OfType<Paragraph>()
@@ -60,11 +62,11 @@ namespace Docx.Processors
             var p = paragraphs.ElementAt(template.Token.Position.ParagraphIndex);
             var model = context.Find(template.Token.ModelDescription.Expression);
 
-            var textEndIndex = p.ReplaceToken(template.Token, model);
+            var textEndIndex = p.ReplaceToken(template.Token, model, _imageProcessor);
             return textEndIndex;
         }
 
-        private Paragraph ProcessArrayTemplate(
+        private Paragraph ProcessTemplate(
             ArrayTemplate template,
             IReadOnlyCollection<Paragraph> paragraphs,
             Model context)
@@ -84,19 +86,19 @@ namespace Docx.Processors
                 }
             }
 
-            var compositeProcessor = new CompositeElementProcessor(_engineConfig);
             var result = new List<OpenXmlElement>();
+            var compositeElementProcessor = new CompositeElementProcessor(_engineConfig, _imageProcessor);
 
             foreach (var item in collection.Items)
             {
                 var itemBody = template.OpenXml.CreateBody();
-                compositeProcessor.Process(itemBody, item);
+                compositeElementProcessor.Process(itemBody, item);
 
                 result.AddRange(itemBody.ChildElements.Select(e => e.CloneNode(true)));
             }
 
-            startParagraph.ReplaceToken(template.Start, Model.Empty);
-            endParagraph.ReplaceToken(template.End, Model.Empty);
+            startParagraph.ReplaceToken(template.Start, Model.Empty, _imageProcessor);
+            endParagraph.ReplaceToken(template.End, Model.Empty, _imageProcessor);
 
             foreach (var e in result)
             {

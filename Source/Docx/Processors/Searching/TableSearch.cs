@@ -80,12 +80,12 @@ namespace Docx.Processors.Searching
             rows.First()
                 .Cells().ElementAt(start.Position.CellIndex)
                 .Paragraphs().ElementAt(start.Position.ParagraphIndex)
-                .ReplaceToken(start, Model.Empty);
+                .ReplaceToken(start, Model.Empty, null);
 
             rows.Last()
                 .Cells().ElementAt(end.Position.CellIndex)
                 .Paragraphs().ElementAt(end.Position.ParagraphIndex)
-                .ReplaceToken(end, Model.Empty);
+                .ReplaceToken(end, Model.Empty, null);
 
             return new OpenXmlTemplate(rows);
         }

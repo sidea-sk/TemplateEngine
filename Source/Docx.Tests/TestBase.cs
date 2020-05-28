@@ -6,14 +6,15 @@ namespace Docx.Tests
 {
     public abstract class TestBase
     {
-        private readonly string _samplesFolder;
         private readonly string _outputFolder;
+
+        protected string SamplesFolder { get; }
 
         protected TestBase(string samplesSubFolder)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            _samplesFolder = $"../../../../Samples/{samplesSubFolder}";
+            SamplesFolder = $"../../../../Samples/{samplesSubFolder}";
             _outputFolder = $"../../../../TestOutputs/{samplesSubFolder}";
         }
 
@@ -33,7 +34,7 @@ namespace Docx.Tests
                 File.Delete(outputFileName);
             }
 
-            var inputFileName = $"{_samplesFolder}/{docxSampleFileName}.docx";
+            var inputFileName = $"{SamplesFolder}/{docxSampleFileName}.docx";
             using var templateStream = File.Open(inputFileName, FileMode.Open, FileAccess.Read);
 
             var engine = new DocumentEngine(config);
