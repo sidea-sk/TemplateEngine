@@ -12,7 +12,7 @@ namespace Docx.Processors.Images
                 return ImagePartType.Bmp;
             }
 
-            var extension = imageName.Substring(index).ToLower();
+            var extension = imageName.Substring(index + 1).ToLower();
             return extension switch
             { 
                 "png" => ImagePartType.Png,
