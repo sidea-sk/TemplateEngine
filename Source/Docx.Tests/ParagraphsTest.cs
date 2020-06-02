@@ -23,6 +23,12 @@ namespace Docx.Tests
         }
 
         [Fact]
+        public void SimpleModelReturningNull()
+        {
+            this.Process(nameof(SimpleModelReturningNull), new SimpleModel("xyz", () => null));
+        }
+
+        [Fact]
         public void RepeatedSimpleModel()
         {
             this.Process(nameof(RepeatedSimpleModel), new SimpleModel("xyz", "XYZ for repetition"));
