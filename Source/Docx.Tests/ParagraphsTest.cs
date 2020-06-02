@@ -11,39 +11,45 @@ namespace Docx.Tests
         }
 
         [Fact]
-        public void SimpleValueAsTheOnlyText()
+        public void SimpleModelAsTheOnlyText()
         {
-            this.Process(nameof(SimpleValueAsTheOnlyText), new SimpleModel("xyz", "The real value of XYZ"));
+            this.Process(nameof(SimpleModelAsTheOnlyText), new SimpleModel("xyz", "The real value of XYZ"));
         }
 
         [Fact]
-        public void SimpleValue()
+        public void SimpleModel()
         {
-            this.Process(nameof(SimpleValue), new SimpleModel("xyz", "The real value of XYZ"));
+            this.Process(nameof(SimpleModel), new SimpleModel("xyz", "The real value of XYZ"));
         }
 
         [Fact]
-        public void RepeatedSimpleValue()
+        public void SimpleModelReturningNull()
         {
-            this.Process(nameof(RepeatedSimpleValue), new SimpleModel("xyz", "XYZ for repetition"));
+            this.Process(nameof(SimpleModelReturningNull), new SimpleModel("xyz", () => null));
         }
 
         [Fact]
-        public void SimpleValueMultipleParagraphs()
+        public void RepeatedSimpleModel()
         {
-            this.Process(nameof(SimpleValueMultipleParagraphs), new SimpleModel("xyz", "The replacement value!"));
+            this.Process(nameof(RepeatedSimpleModel), new SimpleModel("xyz", "XYZ for repetition"));
         }
 
         [Fact]
-        public void SimpleValueStyling()
+        public void SimpleModelMultipleParagraphs()
         {
-            this.Process(nameof(SimpleValueStyling), new SimpleModel("xyz", "The real value of XYZ"));
+            this.Process(nameof(SimpleModelMultipleParagraphs), new SimpleModel("xyz", "The replacement value!"));
         }
 
         [Fact]
-        public void SimpleValueInconsistentStyling()
+        public void SimpleModelStyling()
         {
-            this.Process(nameof(SimpleValueInconsistentStyling), new SimpleModel("xyz", "The real value of XYZ"));
+            this.Process(nameof(SimpleModelStyling), new SimpleModel("xyz", "The real value of XYZ"));
+        }
+
+        [Fact]
+        public void SimpleModelInconsistentStyling()
+        {
+            this.Process(nameof(SimpleModelInconsistentStyling), new SimpleModel("xyz", "The real value of XYZ"));
         }
 
         [Fact]
@@ -53,9 +59,9 @@ namespace Docx.Tests
         }
 
         [Fact]
-        public void MultipleSimpleValues()
+        public void MultipleSimpleModels()
         {
-            this.Process(nameof(MultipleSimpleValues), new SimpleModel("xyz", "The real value of XYZ"));
+            this.Process(nameof(MultipleSimpleModels), new SimpleModel("xyz", "The real value of XYZ"));
         }
 
         [Fact]

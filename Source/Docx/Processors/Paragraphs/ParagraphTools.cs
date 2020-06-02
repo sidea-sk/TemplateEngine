@@ -57,7 +57,7 @@ namespace Docx.Processors
                     startRun.InsertAfterSelf(imageRun);
                     break;
                 default:
-                    replacement = model.FormattedValue();
+                    replacement = model.FormattedValue() ?? string.Empty;
                     replacementLength = replacement.Length;
                     startRun.ReplaceText(replaceFromIndex, token.ModelDescription.OriginalText.Length, model.FormattedValue());
                     break;
