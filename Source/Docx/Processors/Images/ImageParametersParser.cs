@@ -7,7 +7,7 @@ namespace Docx.Processors.Images
 {
     internal static class ImageParametersParser
     {
-        private const string NumberWithUnitPattern = "(\\d+[\\.\\,]\\d*)([a-zA-Z]+)";
+        private const string NumberWithUnitPattern = "(\\d+[\\.\\,]?\\d*)([a-zA-Z]+)";
 
         private const double DPI = 72;
         private const double EMU = 914400; // == 1 Inch == 2.54cm == 127/50cm
