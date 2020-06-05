@@ -4,6 +4,7 @@ using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Docx.DataModel;
 using Docx.Processors.Searching;
+using Microsoft.Extensions.Logging;
 
 namespace Docx.Processors
 {
@@ -11,11 +12,13 @@ namespace Docx.Processors
     {
         private readonly EngineConfig _engineConfig;
         private readonly IImageProcessor _imageProcessor;
+        private readonly ILogger _logger;
 
-        public TablesProcessor(EngineConfig engineConfig, IImageProcessor imageProcessor)
+        public TablesProcessor(EngineConfig engineConfig, IImageProcessor imageProcessor, ILogger logger)
         {
             _engineConfig = engineConfig;
             _imageProcessor = imageProcessor;
+            _logger = logger;
         }
 
         public void Process(OpenXmlCompositeElement parent, Model context)
@@ -92,7 +95,7 @@ namespace Docx.Processors
 
         private void ProcessCellsOfRow(TableRow row, Model context)
         {
-            var compositeElementProcessor = new CompositeElementProcessor(_engineConfig, _imageProcessor);
+            var compositeElementProcessor = new CompositeElementProcessor(_engineConfig, _imageProcessor, _logger);
 
             foreach (var cell in row.Cells())
             {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -12,13 +13,13 @@ namespace Docx.Processors.Images
         private const double DPI = 72;
         private const double EMU = 914400; // == 1 Inch == 2.54cm == 127/50cm
 
-        public static long? Width(this IEnumerable<string> parameters)
+        public static long? WidthInEmu(this IEnumerable<string> parameters)
         {
             var p = parameters.FirstOrDefault(p => p.StartsWith("w"));
             return p.TryGetEmu();
         }
 
-        public static long? Height(this IEnumerable<string> parameters)
+        public static long? HeightInEmu(this IEnumerable<string> parameters)
         {
             var p = parameters.FirstOrDefault(p => p.StartsWith("h"));
             return p.TryGetEmu();
@@ -48,7 +49,7 @@ namespace Docx.Processors.Images
 
         private static long? TryGetEmu(string number, string unit)
         {
-            if(!double.TryParse(number?.Replace(',', '.'), out var n))
+            if (!double.TryParse(number?.Replace(',', '.'), NumberStyles.Number, CultureInfo.InvariantCulture, out var n))
             {
                 return null;
             }

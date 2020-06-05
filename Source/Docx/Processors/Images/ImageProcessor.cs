@@ -5,7 +5,7 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Docx.DataModel;
 using Docx.Processors.Images;
-
+using Microsoft.Extensions.Logging;
 using A = DocumentFormat.OpenXml.Drawing;
 using DW = DocumentFormat.OpenXml.Drawing.Wordprocessing;
 using PIC = DocumentFormat.OpenXml.Drawing.Pictures;
@@ -15,10 +15,12 @@ namespace Docx.Processors
     internal class ImageProcessor : IImageProcessor
     {
         private readonly MainDocumentPart _mainDocumentPart;
+        private readonly ILogger _logger;
 
-        public ImageProcessor(MainDocumentPart mainDocumentPart)
+        public ImageProcessor(MainDocumentPart mainDocumentPart, ILogger logger)
         {
             _mainDocumentPart = mainDocumentPart;
+            _logger = logger;
         }
 
         public Run AddImage(ImageModel model, string parameters)
@@ -31,8 +33,13 @@ namespace Docx.Processors
                 imagePart.FeedData(ms);
             }
 
+            _logger.LogInformation("Image parameters string: {0}", parameters);
             var ip = ImageParameters.FromString(parameters);
+            _logger.LogInformation("Image parameters in emu: {0}", ip.ToString());
+
             var (width, height) = this.GetImageSizeInEmu(model.Data, ip);
+
+
             var run = this.CreateRun(model.ImageName, _mainDocumentPart.GetIdOfPart(imagePart), width, height);
             return run;
         }
@@ -112,11 +119,17 @@ namespace Docx.Processors
             using(var ms = new MemoryStream(data))
             {
                 var image = Image.FromStream(ms);
+                _logger.LogInformation("Image size in pixels: {0}x{1}", image.Width, image.Height);
+
                 pixelWidth = image.Width.PxToEmu();
                 pixelHeight = image.Height.PxToEmu();
+
+                _logger.LogInformation("Image size in emu: {0}x{1}", pixelWidth, pixelHeight);
             }
 
             var (width, height) = imageParameters.Scale(pixelWidth, pixelHeight);
+            _logger.LogInformation("Scaled image size in emu: {0}x{1}", width, height);
+
             return (width, height);
         }
     }
