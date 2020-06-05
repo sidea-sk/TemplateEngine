@@ -1,5 +1,6 @@
 ﻿using DocumentFormat.OpenXml.Packaging;
 using Docx.DataModel;
+using Microsoft.Extensions.Logging;
 
 namespace Docx.Processors
 {
@@ -12,11 +13,13 @@ namespace Docx.Processors
             _engineConfig = engineConfig;
         }
 
+        public ILogger Logger { get; set; }
+
         public void Process(WordprocessingDocument document, Model documentModel)
         {
             var mainPart = document.MainDocumentPart;
-            var imageProcessor = new ImageProcessor(mainPart);
-            var compositeElementProcessor = new CompositeElementProcessor(_engineConfig, imageProcessor);
+            var imageProcessor = new ImageProcessor(mainPart, this.Logger);
+            var compositeElementProcessor = new CompositeElementProcessor(_engineConfig, imageProcessor, this.Logger);
 
             compositeElementProcessor.Process(mainPart.Document.Body, documentModel);
 

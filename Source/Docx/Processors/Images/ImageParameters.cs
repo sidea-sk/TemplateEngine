@@ -5,6 +5,7 @@ namespace Docx.Processors.Images
     internal class ImageParameters
     {
         private const string parameterSeparator = ";";
+
         private readonly long? _maxWidth;
         private readonly long? _maxHeight;
 
@@ -30,8 +31,8 @@ namespace Docx.Processors.Images
             }
 
             var parts = parameters.Split(parameterSeparator);
-            var maxWidth = parts.Width();
-            var maxHeight = parts.Height();
+            var maxWidth = parts.WidthInEmu();
+            var maxHeight = parts.HeightInEmu();
             return new ImageParameters(maxWidth, maxHeight);
         }
 
@@ -52,6 +53,11 @@ namespace Docx.Processors.Images
             return maximum == null || maximum > current
                 ? 1d
                 : 1d * maximum.Value / current;
+        }
+
+        public override string ToString()
+        {
+            return $"{_maxWidth}x{_maxHeight}";
         }
     }
 }

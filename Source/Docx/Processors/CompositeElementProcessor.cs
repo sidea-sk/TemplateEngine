@@ -1,5 +1,6 @@
 ﻿using DocumentFormat.OpenXml;
 using Docx.DataModel;
+using Microsoft.Extensions.Logging;
 
 namespace Docx.Processors
 {
@@ -8,10 +9,10 @@ namespace Docx.Processors
         private ParagraphsProcessor _paragraphsProcessor;
         private TablesProcessor _tablesProcessor;
 
-        public CompositeElementProcessor(EngineConfig engineConfig, IImageProcessor imageProcessor)
+        public CompositeElementProcessor(EngineConfig engineConfig, IImageProcessor imageProcessor, ILogger logger)
         {
-            _paragraphsProcessor = new ParagraphsProcessor(engineConfig, imageProcessor);
-            _tablesProcessor = new TablesProcessor(engineConfig, imageProcessor);
+            _paragraphsProcessor = new ParagraphsProcessor(engineConfig, imageProcessor, logger);
+            _tablesProcessor = new TablesProcessor(engineConfig, imageProcessor, logger);
         }
 
         public void Process(OpenXmlCompositeElement compositeElement, Model context)

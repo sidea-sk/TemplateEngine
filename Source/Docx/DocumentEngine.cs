@@ -2,6 +2,8 @@
 using DocumentFormat.OpenXml.Packaging;
 using Docx.DataModel;
 using Docx.Processors;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Docx
 {
@@ -18,12 +20,16 @@ namespace Docx
             _engineConfig = engineConfig;
         }
 
+        public ILogger Logger { get; set; } = NullLogger.Instance;
+
         public byte[] Run(Stream docxTemplate, Model model)
             => this.Run(docxTemplate, model, _engineConfig);
 
         public byte[] Run(Stream docxTemplate, Model model, EngineConfig engineConfig)
         {
             var processor = new DocumentProcessor(engineConfig);
+            processor.Logger = this.Logger ?? NullLogger.Instance;
+
             using (var ms = new MemoryStream())
             {
                 docxTemplate.CopyTo(ms);
