@@ -40,14 +40,19 @@ namespace Docx.DataModel
                 var childExpression = expression.Child();
                 if (!_childModels.ContainsKey(childExpression.Root))
                 {
-                    return Model.Empty;
+                    return Empty;
                 }
 
                 return _childModels[childExpression.Root].Find(childExpression);
             }
 
+            if (_childModels.ContainsKey(expression.Root))
+            {
+                return _childModels[expression.Root].Find(expression);
+            }
+
             return this.Parent == null
-                ? Model.Empty
+                ? Empty
                 : this.Parent.Find(expression);
         }
 
