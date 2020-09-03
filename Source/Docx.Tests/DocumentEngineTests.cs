@@ -18,17 +18,7 @@ namespace Docx.Tests
         [Fact]
         public void AdHoc()
         {
-            var model = new ObjectModel("p",
-                new SimpleModel("nazov", "abcd"),
-                new ObjectModel("adresa",
-                    new SimpleModel("ulica", "address.Street"),
-                    new SimpleModel("cislo", "address.StreetNumber"),
-                    new SimpleModel("mesto", "address.City"),
-                    new SimpleModel("stat", "address.Country"),
-                    new SimpleModel("psc", "address.Zip")
-                ));
-
-            this.Process("Template", model);
+            this.Process("Template", Model.Empty);
         }
     }
 }
