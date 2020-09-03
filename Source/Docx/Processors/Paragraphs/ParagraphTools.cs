@@ -40,6 +40,11 @@ namespace Docx.Processors
                     ;
 
                 endRun.ReplaceText(0, replaceLength, string.Empty);
+                var firstText = endRun.Childs<Text>().FirstOrDefault();
+                if(firstText != null)
+                {
+                    firstText.Space = SpaceProcessingModeValues.Preserve;
+                }
             }
 
             var replaceFromIndex = token.Position.TextIndex - previousRunsTextLength;

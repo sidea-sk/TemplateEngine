@@ -44,7 +44,7 @@ namespace Docx
         }
 
         public byte[] Run(byte[] docxTemplate, Model model)
-            => this.Run(docxTemplate, model);
+            => this.Run(docxTemplate, model, EngineConfig.Default);
 
         public byte[] Run(byte[] docxTemplate, Model model, EngineConfig engineConfig)
             => this.Run(new MemoryStream(docxTemplate), model, engineConfig);

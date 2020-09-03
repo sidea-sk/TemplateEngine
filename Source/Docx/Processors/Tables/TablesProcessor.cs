@@ -60,7 +60,11 @@ namespace Docx.Processors
 
         private int ProcessTemplate(ArrayTemplate template, Table table, Model context)
         {
-            var collection = (CollectionModel)context.Find(template.Start.ModelDescription.Expression);
+            if (!(context.Find(template.Start.ModelDescription.Expression) is CollectionModel collection))
+            {
+                return template.End.Position.RowIndex + 1;
+            }
+
             var resultRows = new List<TableRow>();
             foreach(var item in collection.Items)
             {

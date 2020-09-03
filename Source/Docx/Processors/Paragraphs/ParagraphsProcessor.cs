@@ -74,7 +74,11 @@ namespace Docx.Processors
             IReadOnlyCollection<Paragraph> paragraphs,
             Model context)
         {
-            var collection = (CollectionModel)context.Find(template.Start.ModelDescription.Expression);
+            if (!(context.Find(template.Start.ModelDescription.Expression) is CollectionModel collection))
+            {
+                return new Paragraph();
+            }
+
             var startParagraph = paragraphs.ElementAt(template.Start.Position.ParagraphIndex);
             var endParagraph = paragraphs.ElementAt(template.End.Position.ParagraphIndex);
 

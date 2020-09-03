@@ -1,9 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <PackageId>Sidea.TemplateEngine.Docx</PackageId>
-    <Version>0.1.6</Version>
+   
     <Authors>Sidea</Authors>
     <Company>Sidea</Company>
     <Product>TemplateEngine.Docx</Product>
@@ -11,15 +11,15 @@
     <PackageProjectUrl></PackageProjectUrl>
     <Description>Engine to create docx documents from templated docx documents. The templates are creating using special syntax placeholders directly in the text of the docx.</Description>
     <RepositoryUrl>https://github.com/sidea-sk/TemplateEngine</RepositoryUrl>
-    <AssemblyVersion>0.0.0.0</AssemblyVersion>
-    <FileVersion>0.0.0.0</FileVersion>
     <AssemblyName>Sidea.TemplateEngine.Docx</AssemblyName>
     <RootNamespace>Docx</RootNamespace>
+    <Version>0.1.8</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DocumentFormat.OpenXml" Version="2.11.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.4" />
+    <PackageReference Include="DocumentFormat.OpenXml" Version="2.11.3" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.7" />
     <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
   </ItemGroup>
 

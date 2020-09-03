@@ -78,6 +78,19 @@ namespace Docx.Tests
         }
 
         [Fact]
+        public void ObjectModelOmittedRootName()
+        {
+            var @object = new ObjectModel(
+                "",
+                new SimpleModel("a", "A - value"),
+                new SimpleModel("b", "B - value"),
+                new SimpleModel("c", "C - value")
+                );
+
+            this.Process(nameof(ObjectModelOmittedRootName), @object);
+        }
+
+        [Fact]
         public void ObjectModelMultipleValues()
         {
             var @object = new ObjectModel(
