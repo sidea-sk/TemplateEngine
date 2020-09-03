@@ -137,7 +137,7 @@ namespace Docx.Tests
             this.Process(nameof(CollectionModel), model);
         }
 
-        [Fact]
+        [Fact(Skip = "not implemented")]
         public void CollectionModelInSameParagraph()
         {
             var items = Enumerable.Range(0, 5)
@@ -191,6 +191,28 @@ namespace Docx.Tests
                 new Model[0]);
 
             this.Process(nameof(CollectionModelParagraphs), model);
+        }
+
+        [Fact]
+        public void ConditionModel()
+        {
+            var model = new ObjectModel("",
+                new ConditionModel("trueCondition", true),
+                new ConditionModel("falseCondition", false)
+            );
+
+            this.Process(nameof(ConditionModel), model);
+        }
+
+        [Fact]
+        public void ConditionModelInOneLine()
+        {
+            var model = new ObjectModel("",
+                new ConditionModel("isTrue", true),
+                new ConditionModel("isFalse", false)
+            );
+
+            this.Process(nameof(ConditionModelInOneLine), model);
         }
     }
 }
