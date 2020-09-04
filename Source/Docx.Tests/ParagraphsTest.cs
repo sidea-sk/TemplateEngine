@@ -225,5 +225,15 @@ namespace Docx.Tests
 
             this.Process(nameof(ConditionModelMultipleParagraphs), model);
         }
+
+        [Fact]
+        public void ConditionModelWithFalseParameter()
+        {
+            var model = new ObjectModel("",
+                new ConditionModel("theCondition", false)
+            );
+
+            this.Process(nameof(ConditionModelWithFalseParameter), model);
+        }
     }
 }

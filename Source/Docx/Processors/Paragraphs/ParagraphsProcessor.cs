@@ -139,7 +139,7 @@ namespace Docx.Processors
             var endParagraph = bodyParagraphs.ElementAt(template.End.Position.ParagraphIndex);
             var textEnd = endParagraph.ReplaceToken(template.End, Model.Empty, _imageProcessor);
 
-            if (!conditionModel.IsTrue())
+            if (!conditionModel.IsFullfilled(template.Start.ModelDescription.Parameters))
             {
                 bodyParagraphs.RemoveTextBetween(template.Start.Position, template.End.Position);
             }

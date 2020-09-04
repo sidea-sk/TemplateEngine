@@ -17,6 +17,13 @@ namespace Docx.DataModel
 
         public bool IsTrue() => _conditionFunc();
 
+        public bool IsFullfilled(string parameter)
+        {
+            return string.IsNullOrWhiteSpace(parameter) || parameter.ToLower() != "false"
+                ? this.IsTrue()
+                : !this.IsTrue();
+        }
+
         public override string FormattedValue()
         {
             return _conditionFunc().ToString();
