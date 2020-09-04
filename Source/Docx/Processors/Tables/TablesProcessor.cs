@@ -54,7 +54,7 @@ namespace Docx.Processors
             this.ProcessRowsBetweenIndeces(
                 table,
                 lastProcessedTableRow,
-                table.Rows().Count() - 1,
+                table.Rows().Count(),
                 context);
         }
 
@@ -89,9 +89,23 @@ namespace Docx.Processors
             return template.Start.Position.RowIndex + resultRows.Count;
         }
 
-        private void ProcessRowsBetweenIndeces(Table table, int firstIndex, int lastIndex, Model context)
+        private void ProcessRowsBetweenIndeces(
+            Table table,
+            int firstIndex,
+            int lastIndex,
+            Model context)
         {
-            foreach(var row in table.Rows().Skip(firstIndex).Take(lastIndex - firstIndex))
+            if(lastIndex == -1)
+            {
+                return;
+            }
+
+            var skipCount = firstIndex < 0 ? 0 : firstIndex;
+            var takeCount = lastIndex == firstIndex
+                ? 1
+                : lastIndex - firstIndex;
+
+            foreach (var row in table.Rows().Skip(skipCount).Take(takeCount))
             {
                 this.ProcessCellsOfRow(row, context);
             }
