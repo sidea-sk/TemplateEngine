@@ -62,5 +62,23 @@ namespace Docx.Tests
 
             this.Process(nameof(CollectionModelTableWithNonTemplateRows), model);
         }
+
+        [Fact]
+        public void CollectionModelTableWithMixedTemplates()
+        {
+            var model = new ObjectModel(
+                "root",
+                new CollectionModel("collection", new[] {
+                    new SimpleModel("$i", "1"),
+                    new SimpleModel("$i", "2"),
+                    new SimpleModel("$i", "3"),
+                    new SimpleModel("$i", "4"),
+                    new SimpleModel("$i", "5"),
+                    },
+                    new Model[0]),
+                new SimpleModel("simpleValue", "the content of simple value"));
+
+            this.Process(nameof(CollectionModelTableWithMixedTemplates), model);
+        }
     }
 }
