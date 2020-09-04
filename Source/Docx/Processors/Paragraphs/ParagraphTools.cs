@@ -89,7 +89,7 @@ namespace Docx.Processors
             TokenPosition from,
             TokenPosition to)
         {
-            if(from.ParagraphIndex == to.ParagraphIndex)
+            if (from.ParagraphIndex == to.ParagraphIndex)
             {
                 paragraphs.ElementAt(from.ParagraphIndex).RemoveText(from.TextIndex, to.TextIndex);
                 return;
@@ -275,7 +275,7 @@ namespace Docx.Processors
                 }
             }
 
-            startRun.ReplaceText(fromIndex, textLength, string.Empty);
+            startRun.ReplaceText(fromIndex - previousRunsTextLength, textLength, string.Empty);
 
             affectedRuns
                 .Skip(1)
