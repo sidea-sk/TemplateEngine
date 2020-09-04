@@ -75,14 +75,28 @@ namespace Docx.Processors.Searching
                     continue;
                 }
 
-                var text = continueAfterOpenToken && i == openToken.Position.ParagraphIndex
-                    ? paragraphs.ElementAt(i).InnerText.Substring(openToken.Position.TextIndex + openToken.ModelDescription.OriginalText.Length)
-                    : paragraphs.ElementAt(i).InnerText;
+                string text;
+                int sameParagraphTextIndex;
+                if(continueAfterOpenToken && i == openToken.Position.ParagraphIndex)
+                {
+                    text = paragraphs.ElementAt(i).InnerText.Substring(openToken.Position.TextIndex + openToken.ModelDescription.OriginalText.Length);
+                    sameParagraphTextIndex = openToken.Position.TextIndex;
+                }
+                else
+                {
+                    text = paragraphs.ElementAt(i).InnerText;
+                    sameParagraphTextIndex = 0;
+                }
 
                 var closeMatch = Regex.Match(text, closePattern, RegexOptions.IgnoreCase);
                 if (closeMatch.Success)
                 {
-                    return config.CreateClosingToken(closeMatch.Groups[1], i, tableRowIndex, tableCellIndex);
+                    return config.CreateClosingToken(
+                        closeMatch.Groups[1],
+                        sameParagraphTextIndex,
+                        i,
+                        tableRowIndex,
+                        tableCellIndex);
                 }
             }
 

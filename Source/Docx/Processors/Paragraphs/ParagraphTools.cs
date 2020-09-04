@@ -9,6 +9,14 @@ namespace Docx.Processors
 {
     internal static class ParagraphTools
     {
+        /// <summary>
+        /// Replaces token with formatted value of the Model.
+        /// </summary>
+        /// <param name="paragraph"></param>
+        /// <param name="token"></param>
+        /// <param name="model"></param>
+        /// <param name="imageProcessor"></param>
+        /// <returns>Position(index) after the replacement of the token.</returns>
         public static int ReplaceToken(
             this Paragraph paragraph,
             Token token,
@@ -74,6 +82,26 @@ namespace Docx.Processors
                 .RemoveSelfFromParent();
 
             return token.Position.TextIndex + replacementLength;
+        }
+
+        public static void RemoveTextBetween(
+            this ICollection<Paragraph> paragraphs,
+            TokenPosition from,
+            TokenPosition to)
+        {
+            if (from.ParagraphIndex == to.ParagraphIndex)
+            {
+                paragraphs.ElementAt(from.ParagraphIndex).RemoveText(from.TextIndex, to.TextIndex);
+                return;
+            }
+
+            paragraphs.ElementAt(from.ParagraphIndex).RemoveText(from.TextIndex);
+            paragraphs.ElementAt(to.ParagraphIndex).RemoveText(0, to.TextIndex);
+
+            paragraphs
+                .Skip(from.ParagraphIndex + 1)
+                .Take(to.ParagraphIndex - from.ParagraphIndex - 1)
+                .RemoveSelfFromParent();
         }
 
         private static (int startRun, int endRun) FindIndeces(this IEnumerable<Run> runs, int tokenStartTextIndex, int tokenLength)
@@ -203,6 +231,56 @@ namespace Docx.Processors
             clones.InsertSelfAfter(tail);
 
             run.InsertAfterSelf(newRun);
+        }
+
+        private static void RemoveText(this Paragraph paragraph, int fromIndex, int? toIndex = null)
+        {
+            if(fromIndex >= paragraph.InnerText.Length)
+            {
+                return;
+            }
+
+            var textLength = toIndex == null
+                ? paragraph.InnerText.Length - fromIndex
+                : toIndex.Value - fromIndex;
+
+            var runs = paragraph.Childs<Run>();
+            var (startRunIndex, endRunIndex) = runs.FindIndeces(fromIndex, textLength);
+
+            var affectedRuns = runs
+                .Skip(startRunIndex)
+                .Take(endRunIndex - startRunIndex + 1)
+                .ToArray();
+
+            var startRun = affectedRuns.First();
+            var endRun = affectedRuns.Last();
+
+            var previousRunsTextLength = runs
+                .Take(startRunIndex)
+                .TextLength();
+
+            if (startRun != endRun)
+            {
+                var replaceLength = textLength
+                    - previousRunsTextLength
+                    - affectedRuns.Take(affectedRuns.Length - 1).TextLength()
+                    + fromIndex
+                    ;
+
+                endRun.ReplaceText(0, replaceLength, string.Empty);
+                var firstText = endRun.Childs<Text>().FirstOrDefault();
+                if (firstText != null)
+                {
+                    firstText.Space = SpaceProcessingModeValues.Preserve;
+                }
+            }
+
+            startRun.ReplaceText(fromIndex - previousRunsTextLength, textLength, string.Empty);
+
+            affectedRuns
+                .Skip(1)
+                .Take(affectedRuns.Length - 2)
+                .RemoveSelfFromParent();
         }
     }
 }

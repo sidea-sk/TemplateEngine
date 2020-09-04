@@ -6,7 +6,7 @@ namespace Docx.Processors.Searching
 {
     internal static class EngineConfigExtensions
     {
-        private const string anyText = ".*?";
+        private const string _anyText = ".*?";
 
         public static Token CreateOpeningToken(
             this EngineConfig engineConfig,
@@ -26,7 +26,7 @@ namespace Docx.Processors.Searching
                 return Token.CollectionBegin(modelDescription, tokenPosition);
             }
 
-            if (engineConfig.IsConditionToken(match.Value))
+            if (engineConfig.IsConditionBeginToken(match.Value))
             {
                 modelDescription = match.Value.ToOpenConditionModelDescription(engineConfig);
                 tokenPosition = new TokenPosition(paragraphIndex, match.Index + textIndexOffset, tableRowIndex, tableCellIndex);
@@ -41,11 +41,12 @@ namespace Docx.Processors.Searching
         public static Token CreateClosingToken(
             this EngineConfig engineConfig,
             Group match,
+            int textIndexOffset,
             int paragraphIndex,
             int tableRowIndex,
             int tableCellIndex)
         {
-            var position = new TokenPosition(paragraphIndex, match.Index, tableRowIndex, tableCellIndex);
+            var position = new TokenPosition(paragraphIndex, match.Index + textIndexOffset, tableRowIndex, tableCellIndex);
 
             if (engineConfig.IsArrayCloseToken(match.Value))
             {
@@ -53,7 +54,7 @@ namespace Docx.Processors.Searching
                 return Token.CollectionEnd(description, position);
             }
 
-            if (engineConfig.IsConditionToken(match.Value))
+            if (engineConfig.IsConditionEndToken(match.Value))
             {
                 var description = match.Value.ToCloseConditionModelDescription(engineConfig);
                 return Token.ConditionEnd(description, position);
@@ -75,17 +76,17 @@ namespace Docx.Processors.Searching
             }
             if (array)
             {
-                temp.Add(engineConfig.ArrayOpenRegexPattern(anyText));
+                temp.Add(engineConfig.ArrayOpenRegexPattern(_anyText));
             }
 
             if (condition)
             {
-                temp.Add(engineConfig.ConditionOpenRegexPattern(anyText));
+                temp.Add(engineConfig.ConditionOpenRegexPattern(_anyText));
             }
 
-            return $"^{anyText}"
+            return $"^{_anyText}"
                 + string.Join("|", temp).ToRegexGroup()
-                + $"{anyText}$";
+                + $"{_anyText}$";
         }
 
         public static string OpeningTokenRegexPattern(this EngineConfig engineConfig, Token openingToken)
@@ -124,22 +125,27 @@ namespace Docx.Processors.Searching
 
         private static bool IsArrayOpenToken(this EngineConfig engineConfig, string match)
         {
-            return Regex.IsMatch(match, engineConfig.ArrayOpenRegexPattern(anyText));
+            return Regex.IsMatch(match, engineConfig.ArrayOpenRegexPattern(_anyText));
         }
 
         private static bool IsArrayCloseToken(this EngineConfig engineConfig, string match)
         {
-            return Regex.IsMatch(match, engineConfig.ArrayCloseRegexPattern(anyText));
+            return Regex.IsMatch(match, engineConfig.ArrayCloseRegexPattern(_anyText));
         }
 
-        private static bool IsConditionToken(this EngineConfig engineConfig, string token)
+        private static bool IsConditionBeginToken(this EngineConfig engineConfig, string token)
         {
-            return Regex.IsMatch(token, engineConfig.ConditionOpenRegexPattern(token));
+            return Regex.IsMatch(token, engineConfig.ConditionOpenRegexPattern(_anyText));
+        }
+
+        private static bool IsConditionEndToken(this EngineConfig engineConfig, string token)
+        {
+            return Regex.IsMatch(token, engineConfig.ConditionCloseRegexPattern(_anyText));
         }
 
         private static string SimpleValueRegexPattern(this EngineConfig engineConfig)
         {
-            return $"{engineConfig.Placeholder.Start.Escape()}{anyText}{engineConfig.Placeholder.End.Escape()}";
+            return $"{engineConfig.Placeholder.Start.Escape()}{_anyText}{engineConfig.Placeholder.End.Escape()}";
         }
 
         private static string ArrayOpenRegexPattern(this EngineConfig engineConfig, string tokenRegex)
@@ -156,13 +162,14 @@ namespace Docx.Processors.Searching
 
         private static string ConditionOpenRegexPattern(this EngineConfig engineConfig, string tokenRegex)
         {
-            return $"{engineConfig.Placeholder.Start.Escape()}{tokenRegex}{engineConfig.Condition.Begin.Escape()}{engineConfig.Placeholder.End.Escape()}"
+            var pattern = $"{engineConfig.Placeholder.Start.Escape()}{tokenRegex}{engineConfig.Condition.Begin.Escape()}{engineConfig.Placeholder.End.Escape()}";
+            return pattern
                 .ToRegexGroup();
         }
 
         private static string ConditionCloseRegexPattern(this EngineConfig engineConfig, string tokenRegex)
         {
-            return $"{engineConfig.Placeholder.Start.Escape()}{engineConfig.Condition.End.Escape()}{tokenRegex}.{engineConfig.Placeholder.End.Escape()}"
+            return $"{engineConfig.Placeholder.Start.Escape()}{engineConfig.Condition.End.Escape()}{tokenRegex}{engineConfig.Placeholder.End.Escape()}"
                 .ToRegexGroup();
         }
 

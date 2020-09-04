@@ -13,8 +13,8 @@
     <RepositoryUrl>https://github.com/sidea-sk/TemplateEngine</RepositoryUrl>
     <AssemblyName>Sidea.TemplateEngine.Docx</AssemblyName>
     <RootNamespace>Docx</RootNamespace>
-    <Version>0.1.8</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.1.9</Version>
   </PropertyGroup>
 
   <ItemGroup>

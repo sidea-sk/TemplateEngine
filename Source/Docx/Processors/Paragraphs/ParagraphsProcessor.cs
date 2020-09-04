@@ -37,32 +37,40 @@ namespace Docx.Processors
                 switch (template)
                 {
                     case SingleValueTemplate svt:
-                        var endOfText = this.ProcessTemplate(svt, paragraphs, context);
+                        {
+                            var endOfText = this.ProcessTemplate(svt, paragraphs, context);
 
-                        paragraphs = paragraphs
-                            .Skip(svt.Token.Position.ParagraphIndex)
-                            .ToArray();
+                            paragraphs = paragraphs
+                                .Skip(svt.Token.Position.ParagraphIndex)
+                                .ToArray();
 
-                        startTextIndex = endOfText;
+                            startTextIndex = endOfText;
+                        }
                         break;
 
                     case ArrayTemplate at:
-                        var lastParagraph = this.ProcessTemplate(at, paragraphs, context);
-                        paragraphs = parent
-                            .ChildElements
-                            .OfType<Paragraph>()
-                            .SkipWhile(p => p != lastParagraph)
-                            .Skip(1)
-                            .ToArray();
-
+                        {
+                            var lastParagraph = this.ProcessTemplate(at, paragraphs, context);
+                            paragraphs = parent
+                                .ChildElements
+                                .OfType<Paragraph>()
+                                .SkipWhile(p => p != lastParagraph)
+                                .Skip(1)
+                                .ToArray();
+                        }
+                        break;
+                    case ConditionTemplate ct:
+                        {
+                            var lastParagraph = this.ProcessTemplate(ct, paragraphs, context);
+                        }
                         break;
                 }
             } while (template != Template.Empty);
         }
 
-        private int ProcessTemplate(SingleValueTemplate template, IReadOnlyCollection<Paragraph> paragraphs, Model context)
+        private int ProcessTemplate(SingleValueTemplate template, IReadOnlyCollection<Paragraph> bodyParagraphs, Model context)
         {
-            var p = paragraphs.ElementAt(template.Token.Position.ParagraphIndex);
+            var p = bodyParagraphs.ElementAt(template.Token.Position.ParagraphIndex);
             var model = context.Find(template.Token.ModelDescription.Expression);
 
             var textEndIndex = p.ReplaceToken(template.Token, model, _imageProcessor);
@@ -71,7 +79,7 @@ namespace Docx.Processors
 
         private Paragraph ProcessTemplate(
             ArrayTemplate template,
-            IReadOnlyCollection<Paragraph> paragraphs,
+            IReadOnlyCollection<Paragraph> bodyParagraphs,
             Model context)
         {
             if (!(context.Find(template.Start.ModelDescription.Expression) is CollectionModel collection))
@@ -79,8 +87,8 @@ namespace Docx.Processors
                 return new Paragraph();
             }
 
-            var startParagraph = paragraphs.ElementAt(template.Start.Position.ParagraphIndex);
-            var endParagraph = paragraphs.ElementAt(template.End.Position.ParagraphIndex);
+            var startParagraph = bodyParagraphs.ElementAt(template.Start.Position.ParagraphIndex);
+            var endParagraph = bodyParagraphs.ElementAt(template.End.Position.ParagraphIndex);
 
             if (startParagraph != endParagraph)
             {
@@ -113,6 +121,30 @@ namespace Docx.Processors
             }
 
             return endParagraph;
+        }
+
+        private (Paragraph, int) ProcessTemplate(
+            ConditionTemplate template,
+            ICollection<Paragraph> bodyParagraphs,
+            Model context)
+        {
+            if (!(context.Find(template.Start.ModelDescription.Expression) is ConditionModel conditionModel))
+            {
+                return (bodyParagraphs.ElementAt(template.End.Position.RowIndex), template.End.Position.TextIndex);
+            }
+
+            var startParagraph = bodyParagraphs.ElementAt(template.Start.Position.ParagraphIndex);
+            startParagraph.ReplaceToken(template.Start, Model.Empty, _imageProcessor);
+
+            var endParagraph = bodyParagraphs.ElementAt(template.End.Position.ParagraphIndex);
+            var textEnd = endParagraph.ReplaceToken(template.End, Model.Empty, _imageProcessor);
+
+            if (!conditionModel.IsFullfilled(template.Start.ModelDescription.Parameters))
+            {
+                bodyParagraphs.RemoveTextBetween(template.Start.Position, template.End.Position);
+            }
+
+            return (endParagraph, textEnd);
         }
     }
 }
