@@ -1,4 +1,6 @@
-﻿namespace Docx.DataModel
+﻿using System;
+
+namespace Docx.DataModel
 {
     public class ImageModel : Model
     {
@@ -9,6 +11,15 @@
         {
             this.ImageName = imageName;
             this.Data = data;
+        }
+
+        public ImageModel(
+            string name,
+            string imageName,
+            string base64) : base(name)
+        {
+            this.ImageName = imageName;
+            this.Data = ImageSourceToByteArray(base64);
         }
 
         public string ImageName { get; }
@@ -28,6 +39,19 @@
             }
 
             return this.Parent.Find(expression);
+        }
+
+        private static byte[] ImageSourceToByteArray(string imageData)
+        {
+            if (string.IsNullOrWhiteSpace(imageData))
+            {
+                return Array.Empty<byte>();
+            }
+
+            var i = imageData.IndexOf(",", StringComparison.InvariantCultureIgnoreCase);
+            var base64 = imageData.Substring(i + 1);
+            var imageByteData = Convert.FromBase64String(base64);
+            return imageByteData;
         }
     }
 }

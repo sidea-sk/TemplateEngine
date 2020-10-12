@@ -113,6 +113,11 @@ namespace Docx.Processors
 
         private (long width, long height) GetImageSizeInEmu(byte[] data, ImageParameters imageParameters)
         {
+            if(data.Length == 0)
+            {
+                return (0, 0);
+            }
+
             long pixelWidth;
             long pixelHeight;
 
