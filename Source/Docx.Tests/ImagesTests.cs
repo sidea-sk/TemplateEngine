@@ -58,6 +58,13 @@ namespace Docx.Tests
             this.Process(nameof(ImageSizeParametersInch), model);
         }
 
+        [Fact]
+        public void EmptyImage()
+        {
+            var model = new ImageModel("image", "empty.jpeg", new byte[0]);
+            this.Process(nameof(EmptyImage), model);
+        }
+
         private ImageModel LoadFromFile(string modelName, string imageName)
         {
             var data = File.ReadAllBytes(this.SamplesFolder + "/" + imageName);
