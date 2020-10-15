@@ -193,47 +193,6 @@ namespace Docx.Tests
             this.Process(nameof(CollectionModelParagraphs), model);
         }
 
-        [Fact]
-        public void ConditionModel()
-        {
-            var model = new ObjectModel("",
-                new ConditionModel("trueCondition", true),
-                new ConditionModel("falseCondition", false)
-            );
-
-            this.Process(nameof(ConditionModel), model);
-        }
-
-        [Fact]
-        public void ConditionModelInOneLine()
-        {
-            var model = new ObjectModel("",
-                new ConditionModel("isTrue", true),
-                new ConditionModel("isFalse", false)
-            );
-
-            this.Process(nameof(ConditionModelInOneLine), model);
-        }
-
-        [Fact]
-        public void ConditionModelMultipleParagraphs()
-        {
-            var model = new ObjectModel("",
-                new ConditionModel("isTrue", true),
-                new ConditionModel("isFalse", false)
-            );
-
-            this.Process(nameof(ConditionModelMultipleParagraphs), model);
-        }
-
-        [Fact]
-        public void ConditionModelWithFalseParameter()
-        {
-            var model = new ObjectModel("",
-                new ConditionModel("theCondition", false)
-            );
-
-            this.Process(nameof(ConditionModelWithFalseParameter), model);
-        }
+        
     }
 }
