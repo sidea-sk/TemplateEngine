@@ -98,9 +98,17 @@ namespace Docx.Processors
             paragraphs.ElementAt(from.ParagraphIndex).RemoveText(from.TextIndex);
             paragraphs.ElementAt(to.ParagraphIndex).RemoveText(0, to.TextIndex);
 
+            var toSkip = from.ParagraphIndex;
+            var take = to.ParagraphIndex - from.ParagraphIndex;
+            if (!string.IsNullOrEmpty(paragraphs.ElementAt(from.ParagraphIndex).InnerText))
+            {
+                toSkip++;
+                take--;
+            }
+
             paragraphs
-                .Skip(from.ParagraphIndex + 1)
-                .Take(to.ParagraphIndex - from.ParagraphIndex - 1)
+                .Skip(toSkip)
+                .Take(take)
                 .RemoveSelfFromParent();
         }
 
@@ -243,6 +251,11 @@ namespace Docx.Processors
             var textLength = toIndex == null
                 ? paragraph.InnerText.Length - fromIndex
                 : toIndex.Value - fromIndex;
+
+            if(textLength == 0)
+            {
+                return;
+            }
 
             var runs = paragraph.Childs<Run>();
             var (startRunIndex, endRunIndex) = runs.FindIndeces(fromIndex, textLength);
