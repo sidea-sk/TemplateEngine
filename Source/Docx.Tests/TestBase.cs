@@ -7,15 +7,17 @@ namespace Docx.Tests
     public abstract class TestBase
     {
         private readonly string _outputFolder;
+        protected readonly string SamplesFolder;
 
-        protected string SamplesFolder { get; }
-
-        protected TestBase(string samplesSubFolder)
+        protected TestBase(
+            string samplesSubFolder,
+            string samplesRootFolder = "../../../../Samples",
+            string outputRootFolder = "../../../../TestOutputs")
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            SamplesFolder = $"../../../../Samples/{samplesSubFolder}";
-            _outputFolder = $"../../../../TestOutputs/{samplesSubFolder}";
+            SamplesFolder = $"{samplesRootFolder}/{samplesSubFolder}";
+            _outputFolder = $"{outputRootFolder}/{samplesSubFolder}";
         }
 
         protected void Process(string docxSampleFileName, Model model)
