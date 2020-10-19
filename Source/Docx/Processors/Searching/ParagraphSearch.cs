@@ -26,6 +26,11 @@ namespace Docx.Processors.Searching
                     ? firstParagraphStartTextIndex
                     : 0;
 
+                if(paragraphs.ElementAt(i).InnerText.Length <= textIndexOffset)
+                {
+                    continue;
+                }
+
                 var text = paragraphs.ElementAt(i).InnerText.Substring(textIndexOffset);
                 var match = Regex.Match(text, pattern, RegexOptions.IgnoreCase);
                 if (!match.Success)
