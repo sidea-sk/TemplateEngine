@@ -1,4 +1,7 @@
-﻿using Docx.DataModel;
+﻿using System.Linq;
+using Docx.DataModel;
+
+using Newtonsoft.Json.Linq;
 
 namespace Docx.Serialization
 {
@@ -6,13 +9,18 @@ namespace Docx.Serialization
     {
         public static string Serialize(Model root)
         {
-            var json = root.ToJson();
-            return "{" + json + "}";
+            var json = root.ToJson(NameSerialization.AsProperty);
+            return json;
         }
 
         public static Model Deserialize(string json)
         {
-            return Model.Empty;
+            var jObject = JObject.Parse(json);
+
+            var name = jObject.Children<JProperty>().SingleOrDefault(p => p.Name == Constants.RootNameProperty);
+            var model = jObject.ToModel(name.Value.ToString());
+
+            return model;
         }
     }
 }

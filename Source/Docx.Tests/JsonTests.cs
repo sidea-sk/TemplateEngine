@@ -5,8 +5,9 @@ namespace Docx.Tests
 {
     public class JsonTests
     {
-        private const string JSON = "{\"root\":{\"$type\": \"Docx.DataModel.ObjectModel\", \"simple\":{\"$type\": \"Docx.DataModel.SimpleModel\", \"value\": \"1\"}, \"conditionTrue\":{\"$type\": \"Docx.DataModel.ConditionModel\", \"value\": True}, \"conditionFalse\":{\"$type\": \"Docx.DataModel.ConditionModel\", \"value\": False}, \"collection\":{\"$type\": \"Docx.DataModel.CollectionModel\", , \"$items\": [{\"$type\": \"Docx.DataModel.SimpleModel\", \"value\": \"1\"}, {\"$type\": \"Docx.DataModel.SimpleModel\", \"value\": \"2\"}, {\"$type\": \"Docx.DataModel.SimpleModel\", \"value\": \"3\"}], \"$itemName\": \"$c\"}, \"image\":{\"$type\": \"Docx.DataModel.ImageModel\", \"value\": \"AQIDBA==\"}}}";
-        
+        private const string NONAME_JSON = "{\"$$_rootName\": \"\", \"$$_type\": \"ObjectModel\", \"simple\":{\"$$_type\": \"SimpleModel\", \"$$_value\": \"1\"}}";
+        private const string JSON = "{\"$$_rootName\": \"root\", \"$$_type\": \"ObjectModel\", \"simple\":{\"$$_type\": \"SimpleModel\", \"$$_value\": \"1\"}, \"conditionTrue\":{\"$$_type\": \"ConditionModel\", \"$$_value\": \"true\"}, \"conditionFalse\":{\"$$_type\": \"ConditionModel\", \"$$_value\": \"false\"}, \"collection\":{\"$$_type\": \"CollectionModel\", \"$$_items\": [{\"$$_type\": \"SimpleModel\", \"$$_value\": \"1\"}, {\"$$_type\": \"SimpleModel\", \"$$_value\": \"2\"}, {\"$$_type\": \"SimpleModel\", \"$$_value\": \"3\"}], \"$$_itemName\": \"$c\"}, \"image\":{\"$$_type\": \"ImageModel\", \"$$_name\": \"image.png\", \"$$_value\": \"AQIDBA==\"}}";
+
         [Fact]
         public void Serialize()
         {
@@ -32,6 +33,28 @@ namespace Docx.Tests
             Assert.Equal(
                 JSON,
                 json);
+        }
+
+        [Fact]
+        public void SerializeModelWithoutName()
+        {
+            var root = new ObjectModel(
+                "",
+                new SimpleModel("simple", "1")
+            );
+
+            var json = Serialization.Serializer.Serialize(root);
+
+            Assert.Equal(
+                NONAME_JSON,
+                json);
+        }
+
+        [Fact]
+        public void Deserialize()
+        {
+            var root = Serialization.Serializer.Deserialize(JSON) as ObjectModel;
+            Assert.NotNull(root);
         }
     }
 }

@@ -1,25 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.Wordprocessing;
 using Docx.DataModel;
 
 namespace Docx.Serialization
 {
     internal static class SerializationFunctions
     {
-        public static string ToJson(this Model model, bool omitName = false)
-        {
-            var json = omitName
-                ?
-                "" :
-                $"\"{model.Name}\":";
+        private const string StringPropertyTemplate = "\"{0}\": \"{1}\"";
+        private const string ValuePropertyTemplate = "\"{0}\": \"{1}\"";
 
-            var properties = string.Join(", ", JsonProperties(model));
+        public static string ToJson(this Model model, NameSerialization nameSerialization = NameSerialization.AsParent)
+        {
+            var json = nameSerialization == NameSerialization.AsParent
+                ? $"\"{model.Name}\":"
+                : string.Empty;
+
+            var properties = JsonProperties(model).Where(js => !string.IsNullOrWhiteSpace(js)).ToList();
+            if(nameSerialization == NameSerialization.AsProperty)
+            {
+                properties.Insert(0, string.Format(StringPropertyTemplate, Constants.RootNameProperty, model.Name));
+            }
+
             json += "{"
-                + properties
+                + string.Join(", ", properties)
                 + "}";
 
             return json;
@@ -27,22 +30,23 @@ namespace Docx.Serialization
 
         private static IEnumerable<string> JsonProperties(Model model)
         {
-            const string tmp = "\"{0}\": {1}";
-
-            var type = model.GetType();
-            yield return string.Format(tmp, "$type", "\"" + type + "\"");
+            var type = model.GetType().Name;
+            yield return string.Format(StringPropertyTemplate, Constants.TypeProperty, type);
 
             switch (model)
             {
                 case SimpleModel _:
-                case ImageModel _:
-                    yield return string.Format(tmp, "value", "\"" + model.FormattedValue()) + "\"";
+                    yield return string.Format(StringPropertyTemplate, Constants.ValueProperty, model.FormattedValue());
+                    break;
+                case ImageModel im:
+                    yield return string.Format(StringPropertyTemplate, Constants.ImageNameProperty, im.ImageName);
+                    yield return string.Format(StringPropertyTemplate, Constants.ValueProperty, im.FormattedValue());
                     break;
                 case ConditionModel _:
-                    yield return string.Format(tmp, "value", model.FormattedValue());
+                    yield return string.Format(ValuePropertyTemplate, Constants.ValueProperty, model.FormattedValue());
                     break;
                 case ObjectModel om:
-                    var js = om.Childs.ToJson(omitName: false);
+                    var js = om.Childs.ToJson(NameSerialization.AsParent);
                     yield return js;
                     break;
             }
@@ -53,21 +57,15 @@ namespace Docx.Serialization
                     ? string.Empty
                     : com.Items.ElementAt(0).Name;
 
-                var items = com.Items.ToJson(omitName: true);
-                yield return $"\"$items\": [{string.Join(", ", items)}]";
-                yield return string.Format(tmp, "$itemName", "\"" + itemName + "\"");
+                var items = com.Items.ToJson(NameSerialization.None);
+                yield return $"\"{Constants.ItemsProperty}\": [{string.Join(", ", items)}]";
+                yield return string.Format(StringPropertyTemplate, Constants.ItemNameProperty, itemName);
             }
         }
 
-        private static string ToJson(this IEnumerable<Model> models, bool omitName)
+        private static string ToJson(this IEnumerable<Model> models, NameSerialization nameSerialization)
         {
-            return string.Join(", ", models.Select(m => m.ToJson(omitName)).ToArray());
-        }
-
-        private static string ChildsToJson(this ObjectModel objectModel)
-        {
-            var childs = objectModel.Childs.Select(c => c.ToJson());
-            return string.Join(", ", childs);
+            return string.Join(", ", models.Select(m => m.ToJson(nameSerialization)).ToArray());
         }
     }
 }
