@@ -67,7 +67,7 @@ namespace Docx.Tests
 
         private ImageModel LoadFromFile(string modelName, string imageName)
         {
-            var data = File.ReadAllBytes(this.SamplesFolder + "/" + imageName);
+            var data = File.ReadAllBytes(SamplesFolder + "/" + imageName);
             return new ImageModel(modelName, imageName, data);
         }
     }
