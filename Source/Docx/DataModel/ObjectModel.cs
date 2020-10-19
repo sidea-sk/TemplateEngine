@@ -19,6 +19,8 @@ namespace Docx.DataModel
             }
         }
 
+        public IReadOnlyList<Model> Childs => _childModels.Values.ToList();
+
         public override string FormattedValue()
             => this.Name;
 

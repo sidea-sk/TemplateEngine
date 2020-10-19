@@ -26,7 +26,7 @@ namespace Docx.DataModel
 
         public override string FormattedValue()
         {
-            return _conditionFunc().ToString();
+            return _conditionFunc().ToString().ToLower();
         }
 
         internal override Model Find(ModelExpression expression)

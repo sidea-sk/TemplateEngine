@@ -28,7 +28,7 @@ namespace Docx.DataModel
 
         public override string FormattedValue()
         {
-            return string.Empty;
+            return Convert.ToBase64String(this.Data);
         }
 
         internal override Model Find(ModelExpression expression)

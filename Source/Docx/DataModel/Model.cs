@@ -16,6 +16,8 @@ namespace Docx.DataModel
 
         protected Model Parent { get; private set; }
 
+        public bool IsRoot => this.Parent == null;
+
         public string Name { get; }
 
         public abstract string FormattedValue();
