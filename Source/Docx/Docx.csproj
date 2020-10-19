@@ -14,7 +14,7 @@
         <AssemblyName>Sidea.TemplateEngine.Docx</AssemblyName>
         <RootNamespace>Docx</RootNamespace>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Version>0.1.13</Version>
+        <Version>0.1.14</Version>
     </PropertyGroup>
 
     <ItemGroup>
