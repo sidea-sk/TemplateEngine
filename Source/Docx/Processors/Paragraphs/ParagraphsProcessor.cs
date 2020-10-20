@@ -50,18 +50,20 @@ namespace Docx.Processors
 
                     case ArrayTemplate at:
                         {
-                            var lastParagraph = this.ProcessTemplate(at, paragraphs, context);
+                            var (lastParagraph, textEnd) = this.ProcessTemplate(at, paragraphs, context);
                             paragraphs = parent
                                 .ChildElements
                                 .OfType<Paragraph>()
                                 .SkipWhile(p => p != lastParagraph)
-                                .Skip(1)
                                 .ToArray();
+                            
+                            startTextIndex = textEnd;
                         }
                         break;
                     case ConditionTemplate ct:
                         {
-                            var lastParagraph = this.ProcessTemplate(ct, paragraphs, context);
+                            var (lastParagraph, textEnd) = this.ProcessTemplate(ct, paragraphs, context);
+                            startTextIndex = textEnd;
                         }
                         break;
                 }
@@ -77,14 +79,14 @@ namespace Docx.Processors
             return textEndIndex;
         }
 
-        private Paragraph ProcessTemplate(
+        private (Paragraph, int) ProcessTemplate(
             ArrayTemplate template,
             IReadOnlyCollection<Paragraph> bodyParagraphs,
             Model context)
         {
             if (!(context.Find(template.Start.ModelDescription.Expression) is CollectionModel collection))
             {
-                return new Paragraph();
+                return (null, 0);
             }
 
             var startParagraph = bodyParagraphs.ElementAt(template.Start.Position.ParagraphIndex);
@@ -113,14 +115,14 @@ namespace Docx.Processors
             }
 
             startParagraph.ReplaceToken(template.Start, Model.Empty, _imageProcessor);
-            endParagraph.ReplaceToken(template.End, Model.Empty, _imageProcessor);
+            var textEnd = endParagraph.ReplaceToken(template.End, Model.Empty, _imageProcessor);
 
             foreach (var e in result)
             {
                 endParagraph.InsertBeforeSelf(e);
             }
 
-            return endParagraph;
+            return (endParagraph, textEnd);
         }
 
         private (Paragraph, int) ProcessTemplate(
